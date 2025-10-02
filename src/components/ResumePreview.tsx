@@ -306,11 +306,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </div>
                 {job.bullets && job.bullets.length > 0 && (
                   <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}> {/* Changed to disc */}
-                    {job.bullets.map((bullet, bulletIndex) => (
-                      <li key={bulletIndex} style={listItemStyle}>
-                        <span>{typeof bullet === 'string' ? bullet : (bullet as any).description || JSON.stringify(bullet)}</span>
-                      </li>
-                    ))}
+                    {job.bullets.map((bullet, bulletIndex) => {
+                      // Ensure bullets are always rendered as strings
+                      const bulletText = typeof bullet === 'string'
+                        ? bullet
+                        : (bullet && typeof bullet === 'object' && 'description' in bullet)
+                          ? (bullet as any).description
+                          : String(bullet);
+                      return (
+                        <li key={bulletIndex} style={listItemStyle}>
+                          <span>{bulletText}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -364,11 +372,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 </div>
                 {project.bullets && project.bullets.length > 0 && (
                   <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}> {/* Changed to disc */}
-                    {project.bullets.map((bullet, bulletIndex) => (
-                      <li key={bulletIndex} style={listItemStyle}>
-                      <span>{typeof bullet === 'string' ? bullet : (bullet as any).description || JSON.stringify(bullet)}</span>
-                      </li>
-                    ))}
+                    {project.bullets.map((bullet, bulletIndex) => {
+                      // Ensure bullets are always rendered as strings
+                      const bulletText = typeof bullet === 'string'
+                        ? bullet
+                        : (bullet && typeof bullet === 'object' && 'description' in bullet)
+                          ? (bullet as any).description
+                          : String(bullet);
+                      return (
+                        <li key={bulletIndex} style={listItemStyle}>
+                          <span>{bulletText}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -404,20 +420,34 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 if (!cert) {
                   return null;
                 }
-                
-                let certText = '';
+
+                // Properly handle both string and object certification types
                 if (typeof cert === 'string') {
-                  certText = cert;
+                  return (
+                    <li key={index} style={listItemStyle}>
+                      <span>{cert}</span>
+                    </li>
+                  );
                 } else if (cert && typeof cert === 'object' && 'title' in cert) {
-                  certText = <><b style={{fontWeight: 'bold'}}>{cert.title}</b>{'description' in cert && cert.description ? `: ${cert.description}` : ''}</> as any; // Bold title
+                  // Handle Certification object with title and description
+                  const certObj = cert as { title: string; description?: string };
+                  return (
+                    <li key={index} style={listItemStyle}>
+                      <span>
+                        <b style={{fontWeight: 'bold'}}>{certObj.title}</b>
+                        {certObj.description ? `: ${certObj.description}` : ''}
+                      </span>
+                    </li>
+                  );
                 } else {
-                  certText = String(cert);
+                  // Fallback for unexpected formats
+                  console.warn('Unexpected certification format:', cert);
+                  return (
+                    <li key={index} style={listItemStyle}>
+                      <span>{String(cert)}</span>
+                    </li>
+                  );
                 }
-                return (
-                  <li key={index} style={listItemStyle}>
-                    <span>{certText}</span>
-                  </li>
-                );
               })}
             </ul>
           </div>

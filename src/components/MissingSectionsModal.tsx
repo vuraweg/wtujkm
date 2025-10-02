@@ -384,7 +384,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
                 value={work.role}
                 onChange={(e) => updateWorkExperience(workIndex, 'role', e.target.value)}
                 placeholder="e.g., Software Engineer"
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+                className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
               />
             </div>
 
@@ -397,7 +397,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
                 value={work.company}
                 onChange={(e) => updateWorkExperience(workIndex, 'company', e.target.value)}
                 placeholder="e.g., TechCorp Inc."
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+                className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
               />
             </div>
           </div>
@@ -426,7 +426,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
                   value={bullet}
                   onChange={(e) => updateWorkBullet(workIndex, bulletIndex, e.target.value)}
                   placeholder="Describe your responsibility/achievement"
-                  className="w-full sm:flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+                  className="w-full sm:flex-1 px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
                 />
                 {work.bullets.length > 1 && (
                   <button
@@ -492,7 +492,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
               value={project.title}
               onChange={(e) => updateProject(projectIndex, 'title', e.target.value)}
               placeholder="e.g., E-commerce Website"
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm min-h-[44px]"
+              className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
             />
           </div>
 
@@ -507,7 +507,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
                   value={bullet}
                   onChange={(e) => updateProjectBullet(projectIndex, bulletIndex, e.target.value)}
                   placeholder="Describe what you built/achieved"
-                  className="w-full sm:flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm min-h-[44px]"
+                  className="w-full sm:flex-1 px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 focus:border-green-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
                 />
                 {project.bullets.length > 1 && (
                   <button
@@ -574,7 +574,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
               value={skillCategory.category}
               onChange={(e) => updateSkillCategory(categoryIndex, 'category', e.target.value)}
               placeholder="e.g., Programming Languages, Frameworks, Tools"
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm min-h-[44px]"
+              className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
             />
           </div>
 
@@ -594,7 +594,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
                   }
                 }}
                 placeholder="e.g., JavaScript, React, Node.js"
-                className="w-full sm:flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm min-h-[44px]"
+                className="w-full sm:flex-1 px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-purple-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
               />
               <button
                 onClick={() => {
@@ -674,7 +674,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
                 value={edu.degree}
                 onChange={(e) => updateEducation(eduIndex, 'degree', e.target.value)}
                 placeholder="e.g., Bachelor of Technology"
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+                className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
               />
             </div>
 
@@ -685,7 +685,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
                 value={edu.school}
                 onChange={(e) => updateEducation(eduIndex, 'school', e.target.value)}
                 placeholder="e.g., University Name"
-                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+                className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
               />
             </div>
           </div>
@@ -752,7 +752,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
             value={cert}
             onChange={(e) => updateCertification(index, e.target.value)}
             placeholder="e.g., AWS Certified Solutions Architect"
-            className="w-full sm:flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm min-h-[44px]"
+            className="w-full sm:flex-1 px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400 focus:border-yellow-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
           />
           {certifications.length > 1 && (
             <button
@@ -794,7 +794,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
           value={contactDetails.email}
           onChange={(e) => updateContactDetails('email', e.target.value)}
           placeholder="e.g., your.email@example.com"
-          className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm min-h-[44px]"
+          className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400 focus:border-yellow-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
         />
       </div>
 
@@ -807,7 +807,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
           value={contactDetails.phone}
           onChange={(e) => updateContactDetails('phone', e.target.value)}
           placeholder="e.g., +1 (555) 123-4567"
-          className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm min-h-[44px]"
+          className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400 focus:border-yellow-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
         />
       </div>
 
@@ -820,7 +820,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
           value={contactDetails.linkedin}
           onChange={(e) => updateContactDetails('linkedin', e.target.value)}
           placeholder="e.g., https://linkedin.com/in/yourprofile"
-          className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm min-h-[44px]"
+          className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400 focus:border-yellow-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
         />
       </div>
 
@@ -833,7 +833,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
           value={contactDetails.github}
           onChange={(e) => updateContactDetails('github', e.target.value)}
           placeholder="e.g., https://github.com/yourusername"
-          className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 text-sm min-h-[44px]"
+          className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-400 focus:border-yellow-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
         />
       </div>
     </div>
