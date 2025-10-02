@@ -65,10 +65,16 @@ export const JobApplicationPage: React.FC = () => {
   const handleOptimizeResume = () => {
     if (!job) return;
 
-    navigate('/resume-optimizer', {
+    const fullJobDescription = [
+      job.full_description || job.description,
+      job.short_description ? `\n\nKey Points: ${job.short_description}` : '',
+      job.qualification ? `\n\nQualifications: ${job.qualification}` : ''
+    ].filter(Boolean).join('\n');
+
+    navigate('/optimizer', {
       state: {
         jobId: job.id,
-        jobDescription: job.description,
+        jobDescription: fullJobDescription,
         roleTitle: job.role_title,
         companyName: job.company_name,
         fromJobApplication: true
