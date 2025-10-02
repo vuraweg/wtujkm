@@ -559,15 +559,47 @@ function drawAchievementsAndExtras(state: PageState, resumeData: ResumeData, PDF
   return totalHeight;
 }
 
+// Draw additional sections dynamically
+function drawAdditionalSection(state: PageState, section: { title: string; bullets: string[] }, PDF_CONFIG: any): number {
+  if (!section || !section.title || !section.bullets || section.bullets.length === 0) return 0;
+
+  let totalHeight = drawSectionTitle(state, section.title.toUpperCase(), PDF_CONFIG);
+
+  section.bullets.forEach(bullet => {
+    if (!checkPageSpace(state, 10, PDF_CONFIG)) {
+      addNewPage(state, PDF_CONFIG);
+    }
+    const bulletHeight = drawText(state, `• ${bullet}`, PDF_CONFIG.margins.left + PDF_CONFIG.spacing.bulletIndent, PDF_CONFIG, {
+      fontSize: PDF_CONFIG.fonts.body.size,
+      maxWidth: PDF_CONFIG.contentWidth - PDF_CONFIG.spacing.bulletIndent
+    });
+    totalHeight += bulletHeight;
+  });
+
+  state.currentY += 2;
+  return totalHeight;
+}
+
 
 // Main export function with mobile optimization
 export const exportToPDF = async (resumeData: ResumeData, userType: UserType = 'experienced', options: ExportOptions = defaultExportOptions): Promise<void> => {
+  // Validate resume data before attempting export
+  if (!resumeData) {
+    throw new Error('Resume data is required for PDF export');
+  }
+
+  if (!resumeData.name || resumeData.name.trim() === '') {
+    throw new Error('Resume must have a name to export');
+  }
+
   const PDF_CONFIG = createPDFConfig(options);
 
   try {
     if (isMobileDevice()) {
       console.log('Starting PDF generation for mobile device...');
     }
+
+    console.log('Initializing PDF document...');
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4', compress: true });
     const state: PageState = { currentPage: 1, currentY: PDF_CONFIG.margins.top, doc };
     doc.setProperties({
@@ -597,9 +629,9 @@ export const exportToPDF = async (resumeData: ResumeData, userType: UserType = '
     }
 
     if (userType === 'experienced') {
+        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
         drawProjects(state, resumeData.projects, PDF_CONFIG);
-        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawCertifications(state, resumeData.certifications, PDF_CONFIG);
         drawEducation(state, resumeData.education, PDF_CONFIG);
     } else if (userType === 'student') {
@@ -611,11 +643,17 @@ export const exportToPDF = async (resumeData: ResumeData, userType: UserType = '
         drawAchievementsAndExtras(state, resumeData, PDF_CONFIG);
     } else { // Fresher
         drawEducation(state, resumeData.education, PDF_CONFIG);
+        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
         drawProjects(state, resumeData.projects, PDF_CONFIG);
-        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawCertifications(state, resumeData.certifications, PDF_CONFIG);
         drawAchievementsAndExtras(state, resumeData, PDF_CONFIG);
+    }
+
+    if (resumeData.additionalSections && resumeData.additionalSections.length > 0) {
+      resumeData.additionalSections.forEach(section => {
+        drawAdditionalSection(state, section, PDF_CONFIG);
+      });
     }
 
     const totalPages = state.currentPage;
@@ -662,14 +700,28 @@ export const getFileName = (resumeData: ResumeData, fileExtension: 'pdf' | 'doc'
 
 // Generate Word document with mobile optimization
 export const exportToWord = async (resumeData: ResumeData, userType: UserType = 'experienced'): Promise<void> => {
+  // Validate resume data before attempting export
+  if (!resumeData) {
+    throw new Error('Resume data is required for Word export');
+  }
+
+  if (!resumeData.name || resumeData.name.trim() === '') {
+    throw new Error('Resume must have a name to export');
+  }
+
   const fileName = getFileName(resumeData, 'doc');
   try {
+    console.log('Generating Word document...');
     const htmlContent = generateWordHTMLContent(resumeData, userType);
-    console.log('Generated Word HTML Content:', htmlContent); // Temporary log for debugging
+    console.log('Word HTML content generated successfully');
     const blob = new Blob([htmlContent], { type: 'application/vnd.ms-word' });
     triggerMobileDownload(blob, fileName);
+    console.log('Word document downloaded successfully');
   } catch (error) {
     console.error('Error exporting to Word:', error);
+    if (error instanceof Error) {
+      throw new Error(`Word export failed: ${error.message}`);
+    }
     throw new Error('Word export failed. Please try again.');
   }
 };
@@ -823,14 +875,27 @@ const generateWordHTMLContent = (data: ResumeData, userType: UserType = 'experie
 ` : '';
 
 
+  const additionalSectionsHtml = data.additionalSections && data.additionalSections.length > 0 ? `
+    ${data.additionalSections.map(section => `
+      <div style="margin-top: 5pt;">
+        <div class="section-title" style="font-size: 10pt; font-weight: bold; margin-bottom: 4pt; text-transform: uppercase; letter-spacing: 0.5pt; font-family: Calibri, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">${section.title.toUpperCase()}</div>
+        <div class="section-underline" style="border-bottom: 0.5pt solid #808080; margin-bottom: 4pt; height: 1px;"></div>
+        <ul class="bullets" style="margin-left: 5mm; margin-bottom: 6pt; margin-top: 2pt; list-style-type: disc;">
+          ${section.bullets.map(bullet => `<li class="bullet" style="font-size: 9.5pt; line-height: 1.4; margin: 0 0 2pt 0; font-family: Calibri, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">${bullet}</li>`).join('')}
+        </ul>
+      </div>
+    `).join('')}
+  ` : '';
+
   if (userType === 'experienced') {
     sectionOrderHtml = `
       ${summaryHtml}
+      ${skillsHtml}
       ${workExperienceHtml}
       ${projectsHtml}
-      ${skillsHtml}
       ${certificationsHtml}
       ${educationHtml}
+      ${additionalSectionsHtml}
     `;
   } else if (userType === 'student') {
     sectionOrderHtml = `
@@ -841,16 +906,18 @@ const generateWordHTMLContent = (data: ResumeData, userType: UserType = 'experie
       ${workExperienceHtml}
       ${certificationsHtml}
       ${achievementsHtml}
+      ${additionalSectionsHtml}
     `;
   } else { // Fresher
     sectionOrderHtml = `
       ${careerObjectiveHtml}
       ${educationHtml}
+      ${skillsHtml}
       ${workExperienceHtml}
       ${projectsHtml}
-      ${skillsHtml}
       ${certificationsHtml}
       ${achievementsHtml}
+      ${additionalSectionsHtml}
     `;
   }
 

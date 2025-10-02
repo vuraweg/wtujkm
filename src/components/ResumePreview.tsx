@@ -247,7 +247,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const getSectionOrder = () => {
     if (userType === 'experienced') {
-      return ['summary', 'workExperience', 'projects', 'skills', 'certifications', 'education'];
+      return ['summary', 'skills', 'workExperience', 'projects', 'certifications', 'education'];
     } else if (userType === 'student') {
       return ['careerObjective', 'education', 'skills', 'projects', 'workExperience', 'certifications', 'achievementsAndExtras'];
     } else { // 'fresher'
@@ -463,7 +463,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             <div style={sectionUnderlineStyle}></div>
             {hasAchievements && (
               <div style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing) }}>
-                <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}> {/* Changed to disc */}
+                <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}>
                   {resumeData.achievements!.map((item, index) => (
                     <li key={index} style={listItemStyle}>
                       <span>{item}</span>
@@ -473,6 +473,28 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               </div>
             )}
           </div>
+        );
+
+      case 'additionalSections':
+        if (!resumeData.additionalSections || resumeData.additionalSections.length === 0) return null;
+        return (
+          <>
+            {resumeData.additionalSections.map((section, sectionIndex) => (
+              <div key={sectionIndex} style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.sectionSpacingAfter) }}>
+                <h2 style={sectionTitleStyle}>{section.title.toUpperCase()}</h2>
+                <div style={sectionUnderlineStyle}></div>
+                {section.bullets && section.bullets.length > 0 && (
+                  <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}>
+                    {section.bullets.map((bullet, bulletIndex) => (
+                      <li key={bulletIndex} style={listItemStyle}>
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </>
         );
 
       default:

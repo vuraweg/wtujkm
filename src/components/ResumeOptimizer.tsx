@@ -22,6 +22,8 @@ import { ExportOptions, defaultExportOptions } from '../types/export';
 import { exportToPDF, exportToWord } from '../utils/exportUtils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ExportButtons } from './ExportButtons';
+import { ResumePreviewControls } from './ResumePreviewControls';
+import { FullScreenPreviewModal } from './FullScreenPreviewModal';
 
 // src/components/ResumeOptimizer.tsx
 const cleanResumeText = (text: string): string => {
@@ -138,6 +140,11 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
   }>({ type: null, status: null, message: '' });
 
   const [optimizationInterrupted, setOptimizationInterrupted] = useState(false);
+
+  const [previewZoom, setPreviewZoom] = useState(1);
+  const [showFullScreenPreview, setShowFullScreenPreview] = useState(false);
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 2;
 
   const userName = (user as any)?.user_metadata?.name || '';
   const userEmail = user?.email || ''; // Correctly accesses email from user object
@@ -558,6 +565,22 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
     setWalletRefreshKey(prevKey => prevKey + 1);
   }, [checkSubscriptionStatus, onShowPlanSelection]); // Dependencies for memoized function
 
+  const handleZoomIn = useCallback(() => {
+    setPreviewZoom(prev => Math.min(prev + 0.1, MAX_ZOOM));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setPreviewZoom(prev => Math.max(prev - 0.1, MIN_ZOOM));
+  }, []);
+
+  const handleFitWidth = useCallback(() => {
+    setPreviewZoom(1);
+  }, []);
+
+  const handleFullScreen = useCallback(() => {
+    setShowFullScreenPreview(true);
+  }, []);
+
   const handleExportFile = useCallback(async (options: ExportOptions, format: 'pdf' | 'word') => {
     if (!optimizedResume) return;
     
@@ -765,7 +788,7 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
             </div>
           </>
         ) : (
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="max-w-7xl mx-auto">
             {jobContext?.fromJobApplication && jobContext.jobId && (
               <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-6 border-2 border-green-300 dark:border-green-700 shadow-2xl">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -817,19 +840,7 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
               </div>
             )}
 
-            <div className="text-center flex flex-col items-center gap-4">
-              <button
-                onClick={() => setActiveTab('resume')}
-                className={`inline-flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors font-medium text-sm shadow-lg ${
-                  activeTab === 'resume'
-                    ? 'bg-gradient-to-r from-neon-cyan-500 to-neon-blue-500 text-white shadow-neon-cyan'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-dark-200 dark:text-gray-300 dark:hover:bg-dark-300'
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span>Resume Preview</span>
-              </button>
-
+            <div className="text-center flex flex-col items-center gap-4 mb-6">
               <button
                 onClick={handleStartNewResume}
                 className="inline-flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-xl shadow transition-colors dark:bg-dark-300 dark:hover:bg-dark-400"
@@ -839,29 +850,64 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
               </button>
             </div>
 
-            {optimizedResume && activeTab === 'resume' && (
-              <>
-                <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden dark:bg-dark-100 dark:border-dark-300 dark:shadow-dark-xl">
-                   <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 border-b border-gray-200 dark:from-dark-200 dark:to-dark-300 dark:border-dark-400 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                      <FileText className="w-5 h-5 mr-2 text-green-600 dark:text-neon-cyan-400" />
-                      Export Resume
-                    </h2>
-                     <ExportButtons
-                    resumeData={optimizedResume}
-                      userType={userType}
-                     // No need to pass onShowProfile or walletRefreshKey here unless ExportButtons directly uses them for its own UI
-                   />
+            {optimizedResume && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Panel - Export Settings */}
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden dark:bg-dark-100 dark:border-dark-300 dark:shadow-dark-xl">
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 border-b border-gray-200 dark:from-dark-200 dark:to-dark-300 dark:border-dark-400">
+                      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                        <FileText className="w-5 h-5 mr-2 text-green-600 dark:text-neon-cyan-400" />
+                        Export Resume
+                      </h2>
+                    </div>
+                    <div className="p-6">
+                      <ResumeExportSettings
+                        resumeData={optimizedResume}
+                        userType={userType}
+                        onExport={handleExportFile}
+                      />
+                    </div>
                   </div>
-                  <div className="p-6">
-                    <ResumeExportSettings
-                      resumeData={optimizedResume}
-                      userType={userType}
-                      onExport={handleExportFile}
-                    />
+
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden dark:bg-dark-100 dark:border-dark-300">
+                    <div className="p-6">
+                      <ExportButtons
+                        resumeData={optimizedResume}
+                        userType={userType}
+                        onShowProfile={onShowProfile}
+                        walletRefreshKey={walletRefreshKey}
+                      />
+                    </div>
                   </div>
                 </div>
-              </>
+
+                {/* Right Panel - Sticky Resume Preview */}
+                <div className="lg:sticky lg:top-6 lg:self-start">
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden dark:bg-dark-100 dark:border-dark-300">
+                    <ResumePreviewControls
+                      zoom={previewZoom}
+                      onZoomIn={handleZoomIn}
+                      onZoomOut={handleZoomOut}
+                      onFitWidth={handleFitWidth}
+                      onFullScreen={handleFullScreen}
+                      minZoom={MIN_ZOOM}
+                      maxZoom={MAX_ZOOM}
+                    />
+                    <div className="bg-gray-50 dark:bg-dark-50 p-4">
+                      <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
+                        <div style={{ transform: `scale(${previewZoom})`, transformOrigin: 'top center' }}>
+                          <ResumePreview
+                            resumeData={optimizedResume}
+                            userType={userType}
+                            exportOptions={exportOptions}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -1056,6 +1102,14 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
         }}
         missingSections={missingSections}
         onSectionsProvided={handleMissingSectionsProvided}
+      />
+
+      <FullScreenPreviewModal
+        isOpen={showFullScreenPreview}
+        onClose={() => setShowFullScreenPreview(false)}
+        resumeData={optimizedResume || { name: '', phone: '', email: '', linkedin: '', github: '', education: [], workExperience: [], projects: [], skills: [], certifications: [] }}
+        userType={userType}
+        exportOptions={exportOptions}
       />
     </div>
   );
