@@ -1036,3 +1036,74 @@ Return ONLY a JSON array of strings: ["skill1", "skill2", "skill3", "skill4", "s
 
   return result;
 };
+
+export interface CompanyDescriptionParams {
+  companyName: string;
+  roleTitle: string;
+  jobDescription: string;
+  qualification: string;
+  domain: string;
+  experienceRequired: string;
+}
+
+export const generateCompanyDescription = async (
+  params: CompanyDescriptionParams
+): Promise<string> => {
+  const { companyName, roleTitle, jobDescription, qualification, domain, experienceRequired } = params;
+
+  const prompt = `You are a professional business writer who creates engaging company descriptions for job listings.
+
+Based on the following information about a company and their job opening, generate a professional 2-3 paragraph "About the Company" description:
+
+Company Name: ${companyName}
+Job Role: ${roleTitle}
+Industry/Domain: ${domain}
+Experience Level: ${experienceRequired}
+
+Job Description:
+${jobDescription}
+
+Required Qualifications:
+${qualification}
+
+REQUIREMENTS:
+1. Write 2-3 well-structured paragraphs (150-250 words total)
+2. Make the description professional, engaging, and informative
+3. Include insights about what type of work the company does based on the role and domain
+4. Highlight the company's focus areas and technical expertise based on the job requirements
+5. Make it sound authentic and compelling to potential candidates
+6. DO NOT make up specific facts, numbers, locations, or founding dates
+7. Focus on the type of work, culture, and opportunities based on the job details provided
+8. Use present tense and active voice
+9. DO NOT include any JSON formatting, markdown, or special characters
+10. Return ONLY the company description text, nothing else
+
+Generate the company description now:`;
+
+  const response = await safeFetch({
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://primoboost.ai",
+      "X-Title": "PrimoBoost AI",
+    },
+    body: JSON.stringify({
+      model: 'deepseek/deepseek-chat-v3.1:free',
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+
+  const responseData = await response.json();
+  let result = responseData?.choices?.[0]?.message?.content;
+
+  if (!result) {
+    throw new Error('No response content from OpenRouter API');
+  }
+
+  result = result.trim();
+
+  result = result.replace(/```markdown/g, '').replace(/```/g, '').trim();
+
+  return result;
+};

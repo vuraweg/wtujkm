@@ -15,11 +15,13 @@ import {
   Calendar,
   Building2,
   FileText,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ExternalLink
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import { JobListing } from '../../types/jobs';
+import { Breadcrumb } from '../common/Breadcrumb';
 
 interface ApplicationFormData {
   fullName: string;
@@ -304,27 +306,41 @@ export const JobApplicationFormPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-dark-50 dark:to-dark-200 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
-        <button
-          onClick={() => navigate(`/jobs/${jobId}/apply`)}
-          className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition-colors mb-6"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
+        <Breadcrumb
+          items={[
+            { label: 'Jobs', path: '/jobs' },
+            { label: job.company_name, path: `/jobs/${jobId}/apply` },
+            { label: 'Application Form', path: undefined, isCurrentPage: true }
+          ]}
+          className="mb-6"
+        />
 
         <div className="bg-white dark:bg-dark-100 rounded-2xl shadow-xl p-8 mb-6">
-          <div className="flex items-center space-x-4 mb-6">
-            {job.company_logo_url ? (
-              <img src={job.company_logo_url} alt={job.company_name} className="w-12 h-12 rounded-lg" />
-            ) : (
-              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                {job.company_name.charAt(0)}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              {job.company_logo_url ? (
+                <img src={job.company_logo_url} alt={job.company_name} className="w-12 h-12 rounded-lg" />
+              ) : (
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                  {job.company_name.charAt(0)}
+                </div>
+              )}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{job.role_title}</h1>
+                <p className="text-gray-600 dark:text-gray-300">{job.company_name}</p>
               </div>
-            )}
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{job.role_title}</h1>
-              <p className="text-gray-600 dark:text-gray-300">{job.company_name}</p>
             </div>
+            {job.application_link && job.application_link.trim() !== '' && (
+              <a
+                href={job.application_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 text-sm font-medium"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Apply on Company Site</span>
+              </a>
+            )}
           </div>
         </div>
 

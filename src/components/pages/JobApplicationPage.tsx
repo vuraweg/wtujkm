@@ -15,10 +15,14 @@ import {
   Calendar,
   Target,
   CheckCircle,
-  Loader2
+  Loader2,
+  RefreshCw,
+  Bot
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { JobListing } from '../../types/jobs';
+import { Breadcrumb } from '../common/Breadcrumb';
+import { generateCompanyDescription } from '../../services/geminiService';
 
 export const JobApplicationPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -26,6 +30,8 @@ export const JobApplicationPage: React.FC = () => {
   const [job, setJob] = useState<JobListing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [generatingDescription, setGeneratingDescription] = useState(false);
+  const [companyDescription, setCompanyDescription] = useState<string>('');
 
   useEffect(() => {
     const fetchJobDetails = async () => {
@@ -50,7 +56,14 @@ export const JobApplicationPage: React.FC = () => {
           return;
         }
 
-        setJob(data as JobListing);
+        const jobData = data as JobListing;
+        setJob(jobData);
+
+        if (!jobData.company_description || jobData.company_description.trim() === '') {
+          setCompanyDescription(`${jobData.company_name} is seeking talented individuals to join their team. This is an excellent opportunity to work with a dynamic organization and contribute to exciting projects.`);
+        } else {
+          setCompanyDescription(jobData.company_description);
+        }
       } catch (err) {
         console.error('Error fetching job:', err);
         setError(err instanceof Error ? err.message : 'Failed to load job details');
@@ -84,7 +97,47 @@ export const JobApplicationPage: React.FC = () => {
 
   const handleDirectApply = () => {
     if (!job) return;
-    navigate(`/jobs/${job.id}/apply-form`);
+
+    if (job.application_link && job.application_link.trim() !== '') {
+      window.open(job.application_link, '_blank', 'noopener,noreferrer');
+    } else {
+      navigate(`/jobs/${job.id}/apply-form`);
+    }
+  };
+
+  const generateDescription = async () => {
+    if (!job) return;
+
+    setGeneratingDescription(true);
+    try {
+      const description = await generateCompanyDescription({
+        companyName: job.company_name,
+        roleTitle: job.role_title,
+        jobDescription: job.description,
+        qualification: job.qualification,
+        domain: job.domain,
+        experienceRequired: job.experience_required
+      });
+
+      setCompanyDescription(description);
+
+      const { error: updateError } = await supabase
+        .from('job_listings')
+        .update({
+          company_description: description,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', job.id);
+
+      if (updateError) {
+        console.error('Error saving generated description:', updateError);
+      }
+    } catch (err) {
+      console.error('Error generating description:', err);
+      setError('Failed to generate company description. Please try again.');
+    } finally {
+      setGeneratingDescription(false);
+    }
   };
 
   const handleGoBack = () => {
@@ -142,13 +195,14 @@ export const JobApplicationPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-dark-50 dark:to-dark-200">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <button
-          onClick={handleGoBack}
-          className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 mb-6"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Jobs</span>
-        </button>
+        <Breadcrumb
+          items={[
+            { label: 'Jobs', path: '/jobs' },
+            { label: job.company_name, path: undefined },
+            { label: job.role_title, path: undefined, isCurrentPage: true }
+          ]}
+          className="mb-6"
+        />
 
         <div className="bg-white dark:bg-dark-100 rounded-2xl shadow-xl overflow-hidden mb-8">
           <div className="p-8 border-b border-gray-200 dark:border-dark-300">
@@ -224,10 +278,38 @@ export const JobApplicationPage: React.FC = () => {
           </div>
 
           <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">About the Company</h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-              {job.company_description || `${job.company_name} is seeking talented individuals to join their team. This is an excellent opportunity to work with a dynamic organization and contribute to exciting projects.`}
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+                <span>About the Company</span>
+                {(!job.company_description || job.company_description.trim() === '') && (
+                  <span className="inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-full">
+                    <Bot className="w-3 h-3" />
+                    <span>AI-Powered</span>
+                  </span>
+                )}
+              </h2>
+              {!generatingDescription && (
+                <button
+                  onClick={generateDescription}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200"
+                  title="Generate AI description"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Generate</span>
+                </button>
+              )}
+            </div>
+
+            {generatingDescription ? (
+              <div className="flex items-center space-x-3 py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                <p className="text-gray-600 dark:text-gray-300">Generating company description with AI...</p>
+              </div>
+            ) : (
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 whitespace-pre-line">
+                {companyDescription}
+              </p>
+            )}
 
             {job.company_website && (
               <a
@@ -334,12 +416,23 @@ export const JobApplicationPage: React.FC = () => {
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <Send className="w-8 h-8" />
+                  {job.application_link && job.application_link.trim() !== '' ? (
+                    <ExternalLink className="w-8 h-8" />
+                  ) : (
+                    <Send className="w-8 h-8" />
+                  )}
                 </div>
+                {job.application_link && job.application_link.trim() !== '' && (
+                  <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold">
+                    External Site
+                  </div>
+                )}
               </div>
               <h3 className="text-2xl font-bold mb-3">Apply Directly</h3>
               <p className="text-green-100 mb-4 leading-relaxed">
-                Skip the optimization process and apply directly with your existing resume. Quick and straightforward application.
+                {job.application_link && job.application_link.trim() !== ''
+                  ? 'Apply directly on the company\'s career portal. You\'ll be redirected to their official application page.'
+                  : 'Skip the optimization process and apply directly with your existing resume. Quick and straightforward application.'}
               </p>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-start space-x-2">
