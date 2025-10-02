@@ -297,7 +297,7 @@ export const JobApplicationPage: React.FC = () => {
                     <div className="mt-0.5 bg-white/20 rounded-full p-0.5">
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
                     </div>
-                    <span className="text-sm font-medium">✔ Higher chances of shortlisting</span>
+                    <span className="text-sm font-medium">Higher chances of shortlisting</span>
                   </li>
                   <li className="flex items-start space-x-2 group/item">
                     <div className="mt-0.5 bg-white/20 rounded-full p-0.5">
