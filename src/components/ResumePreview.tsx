@@ -247,11 +247,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const getSectionOrder = () => {
     if (userType === 'experienced') {
-      return ['summary', 'skills', 'workExperience', 'projects', 'certifications', 'education'];
+      return ['summary', 'workExperience', 'skills', 'projects', 'certifications', 'education', 'additionalSections'];
     } else if (userType === 'student') {
-      return ['careerObjective', 'education', 'skills', 'projects', 'workExperience', 'certifications', 'achievementsAndExtras'];
+      return ['careerObjective', 'education', 'skills', 'projects', 'workExperience', 'certifications', 'achievementsAndExtras', 'additionalSections'];
     } else { // 'fresher'
-      return ['careerObjective', 'education', 'skills', 'projects', 'workExperience', 'certifications', 'achievementsAndExtras'];
+      return ['careerObjective', 'education', 'skills', 'projects', 'workExperience', 'certifications', 'achievementsAndExtras', 'additionalSections'];
     }
   };
 
@@ -288,23 +288,23 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         return (
           <div style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.sectionSpacingAfter) }}>
             <h2 style={sectionTitleStyle}>
-              {userType === 'fresher' ? 'WORK EXPERIENCE' : 'EXPERIENCE'}
+              {userType === 'fresher' || userType === 'student' ? 'WORK EXPERIENCE' : 'PROFESSIONAL EXPERIENCE'}
             </h2>
             <div style={sectionUnderlineStyle}></div>
             {resumeData.workExperience.map((job, index) => (
               <div key={index} style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing * 2) }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing * 0.5) }}>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontSize: ptToPx(PDF_CONFIG.fonts.jobTitle.size), fontWeight: 'bold', fontFamily: `${PDF_CONFIG.fontFamily}, sans-serif` }}>
                       {job.role} | {job.company}{job.location ? `, ${job.location}` : ''}
                     </div>
                   </div>
-                  <div style={{ fontSize: ptToPx(PDF_CONFIG.fonts.year.size), fontFamily: `${PDF_CONFIG.fontFamily}, sans-serif`, fontWeight: 'normal' }}> {/* Changed to normal */}
+                  <div style={{ fontSize: ptToPx(PDF_CONFIG.fonts.year.size), fontFamily: `${PDF_CONFIG.fontFamily}, sans-serif`, fontWeight: 'normal', whiteSpace: 'nowrap', marginLeft: '8px' }}>
                     {job.year}
                   </div>
                 </div>
                 {job.bullets && job.bullets.length > 0 && (
-                  <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}> {/* Changed to disc */}
+                  <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc', paddingLeft: '0' }}>
                     {job.bullets.map((bullet, bulletIndex) => {
                       // Ensure bullets are always rendered as strings
                       const bulletText = typeof bullet === 'string'
@@ -334,11 +334,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             {resumeData.education.map((edu, index) => (
               <div key={index} style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing * 2) }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
+                  <div style={{ flex: 1 }}>
                     <div style={{ fontSize: ptToPx(PDF_CONFIG.fonts.jobTitle.size), fontWeight: 'bold', fontFamily: `${PDF_CONFIG.fontFamily}, sans-serif` }}>
                       {edu.degree}
                     </div>
-                    <div style={{ fontSize: ptToPx(PDF_CONFIG.fonts.company.size), fontWeight: 'normal', fontFamily: `${PDF_CONFIG.fontFamily}, sans-serif` }}> {/* Changed to normal */}
+                    <div style={{ fontSize: ptToPx(PDF_CONFIG.fonts.company.size), fontWeight: 'normal', fontFamily: `${PDF_CONFIG.fontFamily}, sans-serif` }}>
                       {edu.school}{edu.location ? `, ${edu.location}` : ''}
                     </div>
                     {edu.cgpa && (
@@ -347,7 +347,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                       </div>
                     )}
                   </div>
-                  <div style={{ fontSize: ptToPx(PDF_CONFIG.fonts.year.size), fontFamily: `${PDF_CONFIG.fontFamily}, sans-serif`, fontWeight: 'bold' }}> {/* Changed to bold */}
+                  <div style={{ fontSize: ptToPx(PDF_CONFIG.fonts.year.size), fontFamily: `${PDF_CONFIG.fontFamily}, sans-serif`, fontWeight: 'normal', whiteSpace: 'nowrap', marginLeft: '8px' }}>
                     {edu.year}
                   </div>
                 </div>

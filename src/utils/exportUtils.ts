@@ -269,7 +269,7 @@ function drawContactInfo(state: PageState, resumeData: ResumeData, PDF_CONFIG: a
 function drawWorkExperience(state: PageState, workExperience: any[], userType: UserType = 'experienced', PDF_CONFIG: any): number {
   if (!workExperience || workExperience.length === 0) return 0;
 
-  const sectionTitle = userType === 'fresher' ? 'WORK EXPERIENCE' : 'EXPERIENCE';
+  const sectionTitle = (userType === 'fresher' || userType === 'student') ? 'WORK EXPERIENCE' : 'PROFESSIONAL EXPERIENCE';
   let totalHeight = drawSectionTitle(state, sectionTitle, PDF_CONFIG);
 
   workExperience.forEach((job, index) => {
@@ -629,8 +629,8 @@ export const exportToPDF = async (resumeData: ResumeData, userType: UserType = '
     }
 
     if (userType === 'experienced') {
-        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
+        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawProjects(state, resumeData.projects, PDF_CONFIG);
         drawCertifications(state, resumeData.certifications, PDF_CONFIG);
         drawEducation(state, resumeData.education, PDF_CONFIG);
@@ -644,8 +644,8 @@ export const exportToPDF = async (resumeData: ResumeData, userType: UserType = '
     } else { // Fresher
         drawEducation(state, resumeData.education, PDF_CONFIG);
         drawSkills(state, resumeData.skills, PDF_CONFIG);
-        drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
         drawProjects(state, resumeData.projects, PDF_CONFIG);
+        drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
         drawCertifications(state, resumeData.certifications, PDF_CONFIG);
         drawAchievementsAndExtras(state, resumeData, PDF_CONFIG);
     }

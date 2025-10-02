@@ -105,9 +105,9 @@ const asText = (v: any): string => {
   const [autoScoreOnUpload, setAutoScoreOnUpload] = useState(true);
 
   const [optimizedResume, setOptimizedResume] = useState<ResumeData | null>({
-    name: '', phone: '', email: '', linkedin: '', github: '',
+    name: '', phone: '', email: '', linkedin: '', github: '', location: '',
     education: [], workExperience: [], projects: [], skills: [], certifications: [], additionalSections: [],
-    summary: '', careerObjective: ''
+    summary: '', careerObjective: '', achievements: []
   });
   const [parsedResumeData, setParsedResumeData] = useState<ResumeData | null>(null);
   const [pendingResumeData, setPendingResumeData] = useState<ResumeData | null>(null);
@@ -199,9 +199,9 @@ const asText = (v: any): string => {
 
   const handleStartNewResume = useCallback(() => { // Memoize
     setOptimizedResume({
-      name: '', phone: '', email: '', linkedin: '', github: '',
+      name: '', phone: '', email: '', linkedin: '', github: '', location: '',
       education: [], workExperience: [], projects: [], skills: [], certifications: [], additionalSections: [],
-      summary: '', careerObjective: ''
+      summary: '', careerObjective: '', achievements: []
     });
     setExtractionResult({ text: '', extraction_mode: 'TEXT', trimmed: false });
     setJobDescription('');
@@ -1416,41 +1416,59 @@ const handleGenerateProjectBullets = async (
   };
 
  const handleAddAdditionalBullet = (sectionIndex: number) => {
-  console.count(`[AdditionalSections] handleAddAdditionalBullet called for index ${sectionIndex}`); // <-- Check for this line
   setOptimizedResume(prev => {
-    const currentAdditionalSections = prev?.additionalSections ? [...prev.additionalSections] : [];
-    const currentBullets = currentAdditionalSections[sectionIndex]?.bullets ? [...currentAdditionalSections[sectionIndex].bullets] : [];
-    
-    console.log(`[AdditionalSections] Before push:`, currentBullets); // <-- Check for this line
-    
-    // Only add a new empty bullet if the last one is not empty, or if there are no bullets yet
-    if (currentBullets.length === 0 || currentBullets[currentBullets.length - 1].trim() !== '') {
-      const newBullets = [...currentBullets, '']; // Immutable add
-      currentAdditionalSections[sectionIndex] = { // Immutable update of the section object
-        ...currentAdditionalSections[sectionIndex],
-        bullets: newBullets
-      };
-    }
-    
-    console.log(`[AdditionalSections] After push:`, currentAdditionalSections[sectionIndex].bullets); // <-- Check for this line
-    return { ...prev!, additionalSections: currentAdditionalSections }; // Immutable update of the top-level array
+    if (!prev || !prev.additionalSections) return prev;
+
+    const updatedSections = [...prev.additionalSections];
+    if (!updatedSections[sectionIndex]) return prev;
+
+    const currentBullets = updatedSections[sectionIndex].bullets || [];
+
+    // Always add a new empty bullet
+    updatedSections[sectionIndex] = {
+      ...updatedSections[sectionIndex],
+      bullets: [...currentBullets, '']
+    };
+
+    return { ...prev, additionalSections: updatedSections };
   });
 };
 
 
   const handleUpdateAdditionalBullet = (sectionIndex: number, bulletIndex: number, value: string) => {
     setOptimizedResume(prev => {
-      const updatedSections = [...(prev?.additionalSections || [])];
-      updatedSections[sectionIndex].bullets[bulletIndex] = value;
-      return { ...prev!, additionalSections: updatedSections };
+      if (!prev || !prev.additionalSections) return prev;
+
+      const updatedSections = [...prev.additionalSections];
+      if (!updatedSections[sectionIndex]) return prev;
+
+      const updatedBullets = [...(updatedSections[sectionIndex].bullets || [])];
+      updatedBullets[bulletIndex] = value;
+
+      updatedSections[sectionIndex] = {
+        ...updatedSections[sectionIndex],
+        bullets: updatedBullets
+      };
+
+      return { ...prev, additionalSections: updatedSections };
     });
   };
 
   const handleRemoveAdditionalBullet = (sectionIndex: number, bulletIndex: number) => {
     setOptimizedResume(prev => {
-      const updatedSections = [...(prev?.additionalSections || [])];
-      updatedSections[sectionIndex].bullets = updatedSections[sectionIndex].bullets.filter((_, i) => i !== bulletIndex);
-      return { ...prev!, additionalSections: updatedSections };
+      if (!prev || !prev.additionalSections) return prev;
+
+      const updatedSections = [...prev.additionalSections];
+      if (!updatedSections[sectionIndex]) return prev;
+
+      const updatedBullets = updatedSections[sectionIndex].bullets.filter((_, i) => i !== bulletIndex);
+
+      updatedSections[sectionIndex] = {
+        ...updatedSections[sectionIndex],
+        bullets: updatedBullets
+      };
+
+      return { ...prev, additionalSections: updatedSections };
     });
   };
 
@@ -1707,6 +1725,17 @@ const handleGenerateProjectBullets = async (
                     setOptimizedResume(prev => ({ ...prev!, github: value }));
                   }}
                   placeholder="https://github.com/yourusername"
+                  className="input-base"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">Location (Optional)</label>
+                <input
+                  type="text"
+                  name="location"
+                  value={optimizedResume?.location || ''}
+                  onChange={(e) => setOptimizedResume(prev => ({ ...prev!, location: e.target.value }))}
+                  placeholder="City, State/Country"
                   className="input-base"
                 />
               </div>
