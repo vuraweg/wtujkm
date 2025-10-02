@@ -259,30 +259,29 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const renderSection = (sectionName: string) => {
     switch (sectionName) {
+      case 'careerObjective':
+        if (!String(resumeData.careerObjective || '').trim()) return null;
+        return (
+          <div style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.sectionSpacingAfter) }}>
+            <h2 style={sectionTitleStyle}>CAREER OBJECTIVE</h2>
+            <div style={sectionUnderlineStyle}></div>
+            <p style={{ ...bodyTextStyle, marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing) }}>
+              {resumeData.careerObjective || ''}
+            </p>
+          </div>
+        );
+
       case 'summary':
-        if (userType === 'student' || userType === 'fresher') {
-          if (!String(resumeData.careerObjective || '').trim()) return null;
-          return (
-            <div style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.sectionSpacingAfter) }}>
-              <h2 style={sectionTitleStyle}>CAREER OBJECTIVE</h2>
-              <div style={sectionUnderlineStyle}></div>
-              <p style={{ ...bodyTextStyle, marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing) }}>
-                {resumeData.careerObjective || ''}
-              </p>
-            </div>
-          );
-        } else {
-          if (!String(resumeData.summary || '').trim()) return null;
-          return (
-            <div style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.sectionSpacingAfter) }}>
-              <h2 style={sectionTitleStyle}>PROFESSIONAL SUMMARY</h2>
-              <div style={sectionUnderlineStyle}></div>
-              <p style={{ ...bodyTextStyle, marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing) }}>
-                {resumeData.summary || ''}
-              </p>
-            </div>
-          );
-        }
+        if (!String(resumeData.summary || '').trim()) return null;
+        return (
+          <div style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.sectionSpacingAfter) }}>
+            <h2 style={sectionTitleStyle}>PROFESSIONAL SUMMARY</h2>
+            <div style={sectionUnderlineStyle}></div>
+            <p style={{ ...bodyTextStyle, marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing) }}>
+              {resumeData.summary || ''}
+            </p>
+          </div>
+        );
 
       case 'workExperience':
         if (!resumeData.workExperience || resumeData.workExperience.length === 0) return null;
