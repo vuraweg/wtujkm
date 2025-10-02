@@ -293,6 +293,12 @@ export const JobApplicationPage: React.FC = () => {
                     </div>
                     <span className="text-sm font-medium">ATS score analysis and optimization</span>
                   </li>
+                   <li className="flex items-start space-x-2 group/item">
+                    <div className="mt-0.5 bg-white/20 rounded-full p-0.5">
+                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    </div>
+                    <span className="text-sm font-medium">✔ Higher chances of shortlisting</span>
+                  </li>
                   <li className="flex items-start space-x-2 group/item">
                     <div className="mt-0.5 bg-white/20 rounded-full p-0.5">
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
@@ -304,6 +310,12 @@ export const JobApplicationPage: React.FC = () => {
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
                     </div>
                     <span className="text-sm font-medium">Download optimized resume PDF</span>
+                  </li>
+                   <li className="flex items-start space-x-2 group/item">
+                    <div className="mt-0.5 bg-white/20 rounded-full p-0.5">
+                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                    </div>
+                    <span className="text-sm font-medium">⭐ Recommended by hiring experts</span>
                   </li>
                 </ul>
 
@@ -332,15 +344,15 @@ export const JobApplicationPage: React.FC = () => {
               <ul className="space-y-2 mb-6">
                 <li className="flex items-start space-x-2">
                   <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm">Fast application process</span>
+                  <span className="text-sm">⚠ Lower chances of shortlisting without optimization</span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm">Upload your current resume</span>
+                  <span className="text-sm">⚠ No ATS keyword alignment</span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm">Submit application immediately</span>
+                  <span className="text-sm">⚠ May miss recruiter screening filters</span>
                 </li>
               </ul>
               <div className="flex items-center justify-between text-sm font-semibold">
