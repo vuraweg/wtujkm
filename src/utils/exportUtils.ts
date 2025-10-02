@@ -629,8 +629,8 @@ export const exportToPDF = async (resumeData: ResumeData, userType: UserType = '
     }
 
     if (userType === 'experienced') {
-        drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
         drawSkills(state, resumeData.skills, PDF_CONFIG);
+        drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
         drawProjects(state, resumeData.projects, PDF_CONFIG);
         drawCertifications(state, resumeData.certifications, PDF_CONFIG);
         drawEducation(state, resumeData.education, PDF_CONFIG);

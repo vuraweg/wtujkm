@@ -105,21 +105,32 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   useEffect(() => {
     const calculateScale = () => {
       if (contentWrapperRef.current) {
-        const availableWidth = contentWrapperRef.current.offsetWidth; // Width of the scrollable container
-        const resumeNaturalWidthPx = mmToPx(PDF_CONFIG.pageWidth); // The target width of the resume page
+        const containerWidth = contentWrapperRef.current.offsetWidth;
+        const containerHeight = contentWrapperRef.current.offsetHeight;
+        const resumeNaturalWidthPx = mmToPx(PDF_CONFIG.pageWidth);
+        const resumeNaturalHeightPx = mmToPx(PDF_CONFIG.pageHeight);
 
-        if (resumeNaturalWidthPx > availableWidth) {
-          setScaleFactor(availableWidth / resumeNaturalWidthPx);
-        } else {
-          setScaleFactor(1); // No scaling needed if content fits
-        }
+        // Calculate scale factors for both width and height
+        const scaleX = containerWidth / resumeNaturalWidthPx;
+        const scaleY = containerHeight / resumeNaturalHeightPx;
+
+        // Use the smaller scale factor to ensure the entire resume fits
+        // Add 0.95 multiplier to provide some padding
+        const optimalScale = Math.min(scaleX, scaleY) * 0.95;
+
+        setScaleFactor(Math.min(optimalScale, 1)); // Never scale up, only down
       }
     };
 
     calculateScale();
+    // Add a small delay to ensure container dimensions are stable
+    const timeoutId = setTimeout(calculateScale, 100);
     window.addEventListener('resize', calculateScale);
-    return () => window.removeEventListener('resize', calculateScale);
-  }, [PDF_CONFIG.pageWidth]); // Recalculate if page width changes (e.g., A4 to Letter)
+    return () => {
+      window.removeEventListener('resize', calculateScale);
+      clearTimeout(timeoutId);
+    };
+  }, [PDF_CONFIG.pageWidth, PDF_CONFIG.pageHeight]);
 
 
   // Debug logging to check what data we're receiving
@@ -247,7 +258,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const getSectionOrder = () => {
     if (userType === 'experienced') {
-      return ['summary', 'workExperience', 'skills', 'projects', 'certifications', 'education', 'additionalSections'];
+      return ['summary', 'skills', 'workExperience', 'projects', 'certifications', 'education', 'additionalSections'];
     } else if (userType === 'student') {
       return ['careerObjective', 'education', 'skills', 'projects', 'workExperience', 'certifications', 'achievementsAndExtras', 'additionalSections'];
     } else { // 'fresher'
@@ -507,8 +518,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       } ${currentExportOptions.paperSize === 'letter' ? 'resume-letter' : 'resume-a4'
       }`}>
       <div
-        ref={contentWrapperRef} // Attach ref to the scrollable container
-        className="max-h-[70vh] sm:max-h-[80vh] lg:max-h-[800px] overflow-y-auto overflow-x-hidden" // Add overflow-x-hidden
+        ref={contentWrapperRef}
+        className="max-h-[70vh] sm:max-h-[80vh] lg:max-h-[800px] overflow-hidden flex items-center justify-center p-4"
       >
         <div
           style={{
@@ -520,10 +531,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             paddingBottom: mmToPx(PDF_CONFIG.margins.bottom),
             paddingLeft: mmToPx(PDF_CONFIG.margins.left),
             paddingRight: mmToPx(PDF_CONFIG.margins.right),
-            width: mmToPx(PDF_CONFIG.pageWidth), // Explicitly set the natural width of the page
+            width: mmToPx(PDF_CONFIG.pageWidth),
+            minHeight: mmToPx(PDF_CONFIG.pageHeight),
             transform: `scale(${scaleFactor})`,
-            transformOrigin: 'top left', // Scale from top-left corner
-            boxSizing: 'border-box', // Ensure padding is included in the width calculation
+            transformOrigin: 'center center',
+            boxSizing: 'border-box',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            backgroundColor: 'white',
           }}
         >
           {/* Header */}
