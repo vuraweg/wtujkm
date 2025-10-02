@@ -870,13 +870,13 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
   onClick={handleBackdropClick}
 >
 <div
-    className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-4xl overflow-y-auto"
+    className="bg-white dark:bg-dark-100 rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-4xl overflow-y-auto"
     style={{ maxHeight: '80vh', overscrollBehavior: 'contain' }}
   >
 
 
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-orange-50 to-red-50 p-3 sm:p-6 sm:mb-6 border-b border-gray-200">
+        <div className="relative bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-3 sm:p-6 sm:mb-6 border-b border-gray-200 dark:border-dark-300">
           <button
             onClick={onClose}
             className="absolute top-2 right-2 sm:top-4 sm:right-4 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-white/50 min-w-[44px] min-h-[44px]"
@@ -888,17 +888,17 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
             <div className="bg-gradient-to-r from-orange-600 to-red-600 w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 shadow-lg">
               <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
-            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 mb-2 px-4">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 px-4">
               Complete Your Resume
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 px-4">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 px-4">
               We found some missing sections that are important for optimization
             </p>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="p-3 sm:p-6 overflow-y-auto grow shrink basis-0 pb-[100px]">
+        <div className="p-3 sm:p-6 overflow-y-auto grow shrink basis-0 pb-[100px] dark:bg-dark-100">
 
 
 
@@ -910,10 +910,10 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
     <div
       className={`w-10 h-10 rounded-full flex items-center justify-center ${
         index < currentStep
-          ? 'bg-green-500 text-white'
+          ? 'bg-green-500 text-white dark:bg-green-600'
           : index === currentStep
-          ? 'bg-blue-500 text-white'
-          : 'bg-gray-200 text-gray-500'
+          ? 'bg-blue-500 text-white dark:bg-blue-600'
+          : 'bg-gray-200 text-gray-500 dark:bg-dark-200 dark:text-gray-400'
       }`}
     >
       {index < currentStep ? (
@@ -925,10 +925,10 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
 
     {/* Only show text on desktop */}
     <div className="ml-2 hidden sm:block">
-      <div className="text-sm font-medium text-gray-900">
+      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
         {getSectionName(section)}
       </div>
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-gray-500 dark:text-gray-400">
         {index < currentStep
           ? 'Completed'
           : index === currentStep
@@ -939,7 +939,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
 
     {/* Optional line between steps */}
     {index < missingSections.length - 1 && (
-      <div className="w-6 h-px bg-gray-300 mx-2 sm:w-16 sm:h-1 sm:mx-4"></div>
+      <div className="w-6 h-px bg-gray-300 dark:bg-dark-300 mx-2 sm:w-16 sm:h-1 sm:mx-4"></div>
     )}
   </div>
 ))}
@@ -958,18 +958,18 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
         </div>
 
         {/* Footer */}
-      <div className="bg-gray-50 p-3 sm:p-6 border-t border-gray-200 flex flex-row justify-between items-center gap-3 flex-wrap p-25">
+      <div className="bg-gray-50 dark:bg-dark-200 p-3 sm:p-6 border-t border-gray-200 dark:border-dark-300 flex flex-row justify-between items-center gap-3 flex-wrap p-25">
 
         <button
   onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
   disabled={currentStep === 0}
-  className="flex-1 sm:w-auto px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px] flex justify-center items-center"
+  className="flex-1 sm:w-auto px-4 py-3 border border-gray-300 dark:border-dark-300 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm min-h-[44px] flex justify-center items-center"
 >
   <ArrowLeft className="w-4 h-4 sm:mr-2" />
   <span className="hidden sm:inline">Previous</span>
 </button>
 
-          <div className="text-xs sm:text-sm text-gray-500 order-first sm:order-none ">
+          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 order-first sm:order-none ">
             Step {currentStep + 1} of {missingSections.length}
           </div>
 
