@@ -106,8 +106,7 @@ const asText = (v: any): string => {
 
   const [optimizedResume, setOptimizedResume] = useState<ResumeData | null>({
     name: '', phone: '', email: '', linkedin: '', github: '',
-    education: [], workExperience: [], projects: [], skills: [], certifications: [], additionalSections: [],
-    summary: '', careerObjective: ''
+    education: [], workExperience: [], projects: [], skills: [], certifications: [], additionalSections: []
   });
   const [parsedResumeData, setParsedResumeData] = useState<ResumeData | null>(null);
   const [pendingResumeData, setPendingResumeData] = useState<ResumeData | null>(null);
@@ -200,8 +199,7 @@ const asText = (v: any): string => {
   const handleStartNewResume = useCallback(() => { // Memoize
     setOptimizedResume({
       name: '', phone: '', email: '', linkedin: '', github: '',
-      education: [], workExperience: [], projects: [], skills: [], certifications: [], additionalSections: [],
-      summary: '', careerObjective: ''
+      education: [], workExperience: [], projects: [], skills: [], certifications: [], additionalSections: []
     });
     setExtractionResult({ text: '', extraction_mode: 'TEXT', trimmed: false });
     setJobDescription('');
@@ -240,16 +238,6 @@ const asText = (v: any): string => {
       setLoadingSubscription(false);
     }
   }, [isAuthenticated, user, checkSubscriptionStatus]); // Add checkSubscriptionStatus to dependencies
-
-  // Debug: Log optimizedResume changes
-  useEffect(() => {
-    console.log('[GuidedResumeBuilder] optimizedResume updated:', {
-      name: optimizedResume?.name,
-      careerObjective: optimizedResume?.careerObjective,
-      summary: optimizedResume?.summary,
-      userType: userType
-    });
-  }, [optimizedResume, userType]);
 
   // useEffect(() => {
   //   if (extractionResult.text.trim().length > 0 && currentStep === 0) {
