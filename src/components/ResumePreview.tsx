@@ -595,7 +595,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             width: mmToPx(PDF_CONFIG.pageWidth),
             minHeight: mmToPx(PDF_CONFIG.pageHeight),
             transform: `scale(${scaleFactor})`,
-            transformOrigin: 'top center',
+            transformOrigin: 'top left',
             boxSizing: 'border-box',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             backgroundColor: 'white',
