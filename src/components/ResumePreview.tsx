@@ -110,13 +110,18 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         const resumeNaturalWidthPx = mmToPx(PDF_CONFIG.pageWidth);
         const resumeNaturalHeightPx = mmToPx(PDF_CONFIG.pageHeight);
 
+        // Account for padding in the container (32px total = 16px on each side)
+        const paddingOffset = 32;
+        const availableWidth = containerWidth - paddingOffset;
+        const availableHeight = containerHeight - paddingOffset;
+
         // Calculate scale factors for both width and height
-        const scaleX = containerWidth / resumeNaturalWidthPx;
-        const scaleY = containerHeight / resumeNaturalHeightPx;
+        const scaleX = availableWidth / resumeNaturalWidthPx;
+        const scaleY = availableHeight / resumeNaturalHeightPx;
 
         // Use the smaller scale factor to ensure the entire resume fits
-        // Add 0.95 multiplier to provide some padding
-        const optimalScale = Math.min(scaleX, scaleY) * 0.95;
+        // Use 0.92 multiplier to provide adequate padding buffer
+        const optimalScale = Math.min(scaleX, scaleY) * 0.92;
 
         setScaleFactor(Math.min(optimalScale, 1)); // Never scale up, only down
       }
@@ -173,11 +178,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const sectionUnderlineStyle: React.CSSProperties = {
     borderBottomWidth: '0.5pt',
-    borderColor: '#404040', // Changed to darker gray
+    borderColor: '#404040',
     height: '1px',
     marginBottom: mmToPx(PDF_CONFIG.spacing.sectionSpacingAfter),
-    width: `${mmToPx(PDF_CONFIG.contentWidth)}px`,
+    width: '100%',
+    maxWidth: `${mmToPx(PDF_CONFIG.contentWidth)}px`,
     margin: '0 auto',
+    boxSizing: 'border-box',
   };
 
   const bodyTextStyle: React.CSSProperties = {
@@ -223,33 +230,86 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     };
 
     if (isValidField(resumeData.phone, 'phone')) {
-      parts.push(<span key="phone" style={{ fontSize: ptToPx(PDF_CONFIG.fonts.contact.size) }}>{resumeData.phone}</span>);
+      parts.push(
+        <span key="phone" style={{
+          fontSize: ptToPx(PDF_CONFIG.fonts.contact.size),
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>
+          {resumeData.phone}
+        </span>
+      );
     }
     if (isValidField(resumeData.email, 'email')) {
-      parts.push(<span key="email" style={{ fontSize: ptToPx(PDF_CONFIG.fonts.contact.size) }}>{resumeData.email}</span>);
+      parts.push(
+        <span key="email" style={{
+          fontSize: ptToPx(PDF_CONFIG.fonts.contact.size),
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '200px',
+        }}>
+          {resumeData.email}
+        </span>
+      );
     }
     if (isValidField(resumeData.location, 'text')) {
-      parts.push(<span key="location" style={{ fontSize: ptToPx(PDF_CONFIG.fonts.contact.size) }}>{resumeData.location}</span>);
+      parts.push(
+        <span key="location" style={{
+          fontSize: ptToPx(PDF_CONFIG.fonts.contact.size),
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>
+          {resumeData.location}
+        </span>
+      );
     }
     if (isValidField(resumeData.linkedin, 'url')) {
       let processedLinkedin = resumeData.linkedin!;
       if (!processedLinkedin.startsWith('http')) {
         processedLinkedin = `https://${processedLinkedin}`;
       }
-      parts.push(<span key="linkedin" style={{ fontSize: ptToPx(PDF_CONFIG.fonts.contact.size) }}>{processedLinkedin}</span>);
+      parts.push(
+        <span key="linkedin" style={{
+          fontSize: ptToPx(PDF_CONFIG.fonts.contact.size),
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '180px',
+        }}>
+          {processedLinkedin}
+        </span>
+      );
     }
     if (isValidField(resumeData.github, 'url')) {
       let processedGithub = resumeData.github!;
       if (!processedGithub.startsWith('http')) {
         processedGithub = `https://${processedGithub}`;
       }
-      parts.push(<span key="github" style={{ fontSize: ptToPx(PDF_CONFIG.fonts.contact.size) }}>{processedGithub}</span>);
+      parts.push(
+        <span key="github" style={{
+          fontSize: ptToPx(PDF_CONFIG.fonts.contact.size),
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '180px',
+        }}>
+          {processedGithub}
+        </span>
+      );
     }
 
     return parts.map((part, index) => (
       <React.Fragment key={index}>
         {part}
-        {index < parts.length - 1 && <span className="mx-1" style={{ fontSize: ptToPx(PDF_CONFIG.fonts.contact.size) }}>|</span>}
+        {index < parts.length - 1 && (
+          <span style={{
+            fontSize: ptToPx(PDF_CONFIG.fonts.contact.size),
+            margin: '0 4px',
+            flexShrink: 0,
+          }}>
+            |
+          </span>
+        )}
       </React.Fragment>
     ));
   };
@@ -520,13 +580,14 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div
         ref={contentWrapperRef}
         className="max-h-[70vh] sm:max-h-[80vh] lg:max-h-[800px] overflow-hidden flex items-center justify-center p-4"
+        style={{ position: 'relative' }}
       >
         <div
           style={{
             fontFamily: `${PDF_CONFIG.fontFamily}, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif`,
             fontSize: ptToPx(PDF_CONFIG.fonts.body.size),
             lineHeight: PDF_CONFIG.spacing.lineHeight,
-            color: 'inherit',
+            color: '#000000',
             paddingTop: mmToPx(PDF_CONFIG.margins.top),
             paddingBottom: mmToPx(PDF_CONFIG.margins.bottom),
             paddingLeft: mmToPx(PDF_CONFIG.margins.left),
@@ -534,21 +595,29 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             width: mmToPx(PDF_CONFIG.pageWidth),
             minHeight: mmToPx(PDF_CONFIG.pageHeight),
             transform: `scale(${scaleFactor})`,
-            transformOrigin: 'center center',
+            transformOrigin: 'top center',
             boxSizing: 'border-box',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             backgroundColor: 'white',
+            overflow: 'hidden',
           }}
         >
           {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: mmToPx(PDF_CONFIG.spacing.afterContact) }}>
+          <div style={{
+            textAlign: 'center',
+            marginBottom: mmToPx(PDF_CONFIG.spacing.afterContact),
+            maxWidth: `${mmToPx(PDF_CONFIG.contentWidth)}px`,
+            margin: '0 auto',
+          }}>
             <h1 style={{
               fontSize: ptToPx(PDF_CONFIG.fonts.name.size),
               fontWeight: 'bold',
               letterSpacing: '1pt',
               marginBottom: mmToPx(PDF_CONFIG.spacing.afterName),
               fontFamily: `${PDF_CONFIG.fontFamily}, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif`,
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
+              wordWrap: 'break-word',
+              overflow: 'hidden',
             }}>
               {resumeData.name}
             </h1>
@@ -560,9 +629,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 fontFamily: `${PDF_CONFIG.fontFamily}, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif`,
                 marginBottom: mmToPx(PDF_CONFIG.spacing.afterContact),
                 display: 'flex',
-                justifyContent: 'center', // Centered
+                justifyContent: 'center',
                 alignItems: 'center',
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
+                gap: '4px',
+                maxWidth: '100%',
+                overflow: 'hidden',
+                wordBreak: 'break-word',
               }}>
                 {contactElements}
               </div>
@@ -570,15 +643,23 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
             <div style={{
               borderBottomWidth: '0.5pt',
-              borderColor: '#404040', // Changed to darker gray
+              borderColor: '#404040',
               height: '1px',
               margin: '0 auto',
-              width: `${mmToPx(PDF_CONFIG.contentWidth)}px`,
+              width: '100%',
+              maxWidth: `${mmToPx(PDF_CONFIG.contentWidth)}px`,
             }}></div>
           </div>
 
           {/* Dynamic sections */}
-          {(Array.isArray(sectionOrder) ? sectionOrder : []).map((sectionName) => renderSection(sectionName))}
+          <div style={{
+            maxWidth: `${mmToPx(PDF_CONFIG.contentWidth)}px`,
+            margin: '0 auto',
+            width: '100%',
+            boxSizing: 'border-box',
+          }}>
+            {(Array.isArray(sectionOrder) ? sectionOrder : []).map((sectionName) => renderSection(sectionName))}
+          </div>
         </div>
       </div>
     </div>
