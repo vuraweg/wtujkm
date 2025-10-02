@@ -579,7 +579,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
       }`}>
       <div
         ref={contentWrapperRef}
-        className="max-h-[70vh] sm:max-h-[80vh] lg:max-h-[800px] overflow-hidden flex items-center justify-center p-4"
+        className="max-h-[70vh] sm:max-h-[80vh] lg:max-h-[800px] overflow-auto flex items-center justify-center p-4"
         style={{ position: 'relative' }}
       >
         <div
