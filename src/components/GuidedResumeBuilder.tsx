@@ -2581,7 +2581,7 @@ const handleGenerateProjectBullets = async (
 
         <div className="max-w-7xl mx-auto space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
           {/* Left Column: Guided Builder Sections & Navigation */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-6 order-2 lg:order-1">
             {/* Step Progress Bar */}
             <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 dark:bg-dark-100 dark:border-dark-300">
               <div className="flex items-center justify-between mb-4">
@@ -2628,20 +2628,28 @@ const handleGenerateProjectBullets = async (
           </div>
 
           {/* Right Column: Resume Preview & Export Buttons */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden dark:bg-dark-100 dark:border-dark-300 dark:shadow-dark-xl">
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 border-b border-gray-200 dark:from-dark-200 dark:to-dark-300 dark:border-dark-400">
+          <div className="lg:col-span-1 space-y-6 order-1 lg:order-2">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden dark:bg-dark-100 dark:border-dark-300 dark:shadow-dark-xl lg:sticky lg:top-6">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 border-b border-gray-200 dark:from-dark-200 dark:to-dark-300 dark:border-dark-400">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center">
                   <FileText className="w-5 h-5 mr-2 text-blue-600 dark:text-neon-cyan-400" />
                   Live Resume Preview
                 </h2>
               </div>
-              <div className="p-6">
+              <div className="relative bg-gray-50 dark:bg-dark-200 h-[500px] sm:h-[600px] md:h-[700px] lg:h-[calc(100vh-200px)] lg:min-h-[600px] lg:max-h-[900px]">
                 {optimizedResume ? (
-                  <ResumePreview resumeData={optimizedResume} userType={userType} />
+                  <ResumePreview
+                    resumeData={optimizedResume}
+                    userType={userType}
+                    showControls={true}
+                  />
                 ) : (
-                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                    Fill out the sections to see your resume preview here.
+                  <div className="flex items-center justify-center h-full text-center px-6 py-12 text-gray-500 dark:text-gray-400">
+                    <div>
+                      <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                      <p className="text-lg font-medium mb-2">No Preview Yet</p>
+                      <p className="text-sm">Fill out the sections to see your resume preview here.</p>
+                    </div>
                   </div>
                 )}
               </div>

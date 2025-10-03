@@ -1,7 +1,8 @@
 // src/components/ResumePreview.tsx
 
-import React, { useRef, useEffect, useState } from 'react'; // Import useRef, useEffect, useState
+import React, { useRef, useEffect, useState } from 'react';
 import { ResumeData, UserType } from '../types/resume';
+import { LiveResumePreviewControls } from './LiveResumePreviewControls';
 
 // --- FIX: Define necessary types and defaults locally to resolve import error ---
 interface ExportOptions {
@@ -88,54 +89,98 @@ interface ResumePreviewProps {
   resumeData: ResumeData;
   userType?: UserType;
   exportOptions?: ExportOptions;
+  showControls?: boolean;
+  onScaleChange?: (scale: number) => void;
 }
 
 export const ResumePreview: React.FC<ResumePreviewProps> = ({
   resumeData,
   userType = 'experienced',
-  exportOptions
+  exportOptions,
+  showControls = false,
+  onScaleChange
 }) => {
   // Use defaultExportOptions if exportOptions is not provided
   const currentExportOptions = exportOptions || defaultExportOptions;
   const PDF_CONFIG = createPDFConfigForPreview(currentExportOptions);
 
   const contentWrapperRef = useRef<HTMLDivElement>(null);
+  const resumeContentRef = useRef<HTMLDivElement>(null);
   const [scaleFactor, setScaleFactor] = useState(1);
+  const [autoScaleFactor, setAutoScaleFactor] = useState(1);
+  const [isScaling, setIsScaling] = useState(true);
+  const [manualZoom, setManualZoom] = useState(false);
 
   useEffect(() => {
     const calculateScale = () => {
-      if (contentWrapperRef.current) {
+      if (contentWrapperRef.current && !manualZoom) {
         const containerWidth = contentWrapperRef.current.offsetWidth;
         const containerHeight = contentWrapperRef.current.offsetHeight;
         const resumeNaturalWidthPx = mmToPx(PDF_CONFIG.pageWidth);
         const resumeNaturalHeightPx = mmToPx(PDF_CONFIG.pageHeight);
 
-        // Account for padding in the container (32px total = 16px on each side)
-        const paddingOffset = 32;
-        const availableWidth = containerWidth - paddingOffset;
-        const availableHeight = containerHeight - paddingOffset;
+        // Calculate available space with minimal padding
+        const availableWidth = containerWidth - 40;
+        const availableHeight = containerHeight - 40;
 
         // Calculate scale factors for both width and height
         const scaleX = availableWidth / resumeNaturalWidthPx;
         const scaleY = availableHeight / resumeNaturalHeightPx;
 
-        // Use the smaller scale factor to ensure the entire resume fits
-        // Use 0.92 multiplier to provide adequate padding buffer
-        const optimalScale = Math.min(scaleX, scaleY) * 0.92;
+        // Use the smaller scale factor with 0.95 multiplier for optimal fit
+        const optimalScale = Math.min(scaleX, scaleY) * 0.95;
 
-        setScaleFactor(Math.min(optimalScale, 1)); // Never scale up, only down
+        // Allow scaling down but prevent scaling up beyond original size
+        const finalScale = Math.min(optimalScale, 1);
+
+        setAutoScaleFactor(finalScale);
+        setScaleFactor(finalScale);
+        setIsScaling(false);
+
+        if (onScaleChange) {
+          onScaleChange(finalScale);
+        }
       }
     };
 
+    setIsScaling(true);
     calculateScale();
-    // Add a small delay to ensure container dimensions are stable
-    const timeoutId = setTimeout(calculateScale, 100);
+
+    const timeoutId = setTimeout(calculateScale, 150);
+
     window.addEventListener('resize', calculateScale);
     return () => {
       window.removeEventListener('resize', calculateScale);
       clearTimeout(timeoutId);
     };
-  }, [PDF_CONFIG.pageWidth, PDF_CONFIG.pageHeight]);
+  }, [PDF_CONFIG.pageWidth, PDF_CONFIG.pageHeight, resumeData, manualZoom, onScaleChange]);
+
+  // Zoom control handlers
+  const handleZoomIn = () => {
+    setManualZoom(true);
+    const newScale = Math.min(scaleFactor + 0.1, 1.5);
+    setScaleFactor(newScale);
+    if (onScaleChange) {
+      onScaleChange(newScale);
+    }
+  };
+
+  const handleZoomOut = () => {
+    setManualZoom(true);
+    const newScale = Math.max(scaleFactor - 0.1, 0.3);
+    setScaleFactor(newScale);
+    if (onScaleChange) {
+      onScaleChange(newScale);
+    }
+  };
+
+  const handleResetZoom = () => {
+    setManualZoom(false);
+    setScaleFactor(autoScaleFactor);
+    if (onScaleChange) {
+      onScaleChange(autoScaleFactor);
+    }
+  };
 
 
   // Debug logging to check what data we're receiving
@@ -574,34 +619,49 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   };
 
   return (
-    <div className={`card dark:bg-dark-100 dark:border-dark-300 resume-one-column ${currentExportOptions.layoutType === 'compact' ? 'resume-compact' : 'resume-standard'
-      } ${currentExportOptions.paperSize === 'letter' ? 'resume-letter' : 'resume-a4'
-      }`}>
+    <div className="w-full h-full flex flex-col">
+      {showControls && (
+        <LiveResumePreviewControls
+          scaleFactor={scaleFactor}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onReset={handleResetZoom}
+          minZoom={0.3}
+          maxZoom={1.5}
+        />
+      )}
       <div
         ref={contentWrapperRef}
-        className="max-h-[70vh] sm:max-h-[80vh] lg:max-h-[800px] overflow-auto flex items-center justify-center p-4"
-        style={{ position: 'relative' }}
+        className="flex-1 overflow-auto flex items-start justify-center p-5"
+        style={{
+          position: 'relative',
+          backgroundColor: 'transparent'
+        }}
       >
-        <div
-          style={{
-            fontFamily: `${PDF_CONFIG.fontFamily}, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif`,
-            fontSize: ptToPx(PDF_CONFIG.fonts.body.size),
-            lineHeight: PDF_CONFIG.spacing.lineHeight,
-            color: '#000000',
-            paddingTop: mmToPx(PDF_CONFIG.margins.top),
-            paddingBottom: mmToPx(PDF_CONFIG.margins.bottom),
-            paddingLeft: mmToPx(PDF_CONFIG.margins.left),
-            paddingRight: mmToPx(PDF_CONFIG.margins.right),
-            width: mmToPx(PDF_CONFIG.pageWidth),
-            minHeight: mmToPx(PDF_CONFIG.pageHeight),
-            transform: `scale(${scaleFactor})`,
-            transformOrigin: 'top left',
-            boxSizing: 'border-box',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            backgroundColor: 'white',
-            overflow: 'hidden',
-          }}
-        >
+      <div
+        ref={resumeContentRef}
+        className={`resume-one-column ${currentExportOptions.layoutType === 'compact' ? 'resume-compact' : 'resume-standard'} ${currentExportOptions.paperSize === 'letter' ? 'resume-letter' : 'resume-a4'}`}
+        style={{
+          fontFamily: `${PDF_CONFIG.fontFamily}, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif`,
+          fontSize: ptToPx(PDF_CONFIG.fonts.body.size),
+          lineHeight: PDF_CONFIG.spacing.lineHeight,
+          color: '#000000',
+          paddingTop: mmToPx(PDF_CONFIG.margins.top),
+          paddingBottom: mmToPx(PDF_CONFIG.margins.bottom),
+          paddingLeft: mmToPx(PDF_CONFIG.margins.left),
+          paddingRight: mmToPx(PDF_CONFIG.margins.right),
+          width: mmToPx(PDF_CONFIG.pageWidth),
+          minHeight: mmToPx(PDF_CONFIG.pageHeight),
+          transform: `scale(${scaleFactor})`,
+          transformOrigin: 'top center',
+          boxSizing: 'border-box',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          backgroundColor: 'white',
+          overflow: 'hidden',
+          transition: isScaling ? 'none' : 'transform 0.3s ease',
+          marginBottom: `${mmToPx(PDF_CONFIG.pageHeight) * (1 - scaleFactor)}px`,
+        }}
+      >
           {/* Header */}
           <div style={{
             textAlign: 'center',
