@@ -19,7 +19,7 @@ export const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
   userType,
   exportOptions
 }) => {
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(1.8);
 
   if (!isOpen) return null;
 
