@@ -446,7 +446,7 @@ export const LinkedInMessageGenerator: React.FC<LinkedInMessageGeneratorProps> =
                 <textarea
                   value={formData.referralContext || ''}
                   onChange={(e) => handleInputChange('referralContext', e.target.value)}
-                  placeholder="How do you know this person or why are you referring them? E.g., 'Our mutual connection Y suggested I reach out'."
+                  placeholder="Describe your relationship with this person for a personalized opening. E.g., 'I admire your team's work on the [Product],' or 'We met briefly at the [Event/Webinar] last year."
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-24 resize-none transition-all dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-neon-cyan-400"
                 />
               </div>
