@@ -316,7 +316,7 @@ export const JobCard: React.FC<JobCardProps> = ({
             title="Feature launching soon"
           >
             <Sparkles className="w-4 h-4 animate-pulse" />
-            <span>Coming Soon</span>
+            <span>Apply Now</span>
             <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-bl-lg font-bold">SOON</div>
           </button>
         </div>
