@@ -19,7 +19,7 @@ export const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
   userType,
   exportOptions
 }) => {
-  const [zoom, setZoom] = useState(0.98);
+  const [zoom, setZoom] = useState(1);
 
   if (!isOpen) return null;
 
@@ -28,7 +28,7 @@ export const FullScreenPreviewModal: React.FC<FullScreenPreviewModalProps> = ({
   };
 
   const handleZoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.1, 0.5));
+    setZoom(prev => Math.max(prev - 0.1, 0.98));
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
