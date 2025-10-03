@@ -241,6 +241,12 @@ export const JobCard: React.FC<JobCardProps> = ({
               {[job.has_coding_test && 'Code', job.has_aptitude_test && 'Aptitude', job.has_technical_interview && 'Tech', job.has_hr_interview && 'HR'].filter(Boolean).join(' + ')}
             </span>
           )}
+          {job.ai_polished && (
+            <span className="px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 dark:from-purple-900/40 dark:to-pink-900/40 dark:text-purple-300 rounded-full text-xs font-medium flex items-center border border-purple-200 dark:border-purple-700">
+              <Sparkles className="w-3 h-3 mr-1" />
+              AI Enhanced
+            </span>
+          )}
         </div>
 
         <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">

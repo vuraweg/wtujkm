@@ -23,7 +23,7 @@ import { PlanSelectionModal } from './components/payment/PlanSelectionModal';
 import { PricingPage } from './components/pages/PricingPage';
 import { OfferOverlay } from './components/OfferOverlay';
 import { CareersPage } from './components/pages/CareersPage';
-import { JobDetailsPage } from './components/pages/JobDetailsPage';
+import { JobDetailsPageNew as JobDetailsPage } from './components/pages/JobDetailsPageNew';
 import { JobsPage } from './components/pages/JobsPage';
 import { MyApplicationsPage } from './components/pages/MyApplicationsPage';
 import { JobApplicationPage } from './components/pages/JobApplicationPage';

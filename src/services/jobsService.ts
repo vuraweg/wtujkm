@@ -60,6 +60,8 @@ class JobsService {
       const insertData = {
         company_name: jobData.company_name,
         company_logo_url: jobData.company_logo_url || null,
+        company_website: jobData.company_website || null,
+        company_description: jobData.company_description || null,
         role_title: jobData.role_title,
         package_amount: jobData.package_amount || null,
         package_type: jobData.package_type || null,
@@ -70,10 +72,33 @@ class JobsService {
         qualification: jobData.qualification,
         short_description: jobData.short_description,
         full_description: jobData.full_description,
+        description: jobData.full_description, // Duplicate for compatibility
         application_link: jobData.application_link,
         posted_date: new Date().toISOString(),
         source_api: 'manual_admin',
         is_active: jobData.is_active !== undefined ? jobData.is_active : true,
+
+        // Referral information
+        referral_person_name: jobData.referral_person_name || null,
+        referral_email: jobData.referral_email || null,
+        referral_code: jobData.referral_code || null,
+        referral_link: jobData.referral_link || null,
+        referral_bonus_amount: jobData.referral_bonus_amount || null,
+        referral_terms: jobData.referral_terms || null,
+        has_referral: !!(jobData.referral_person_name || jobData.referral_email || jobData.referral_code || jobData.referral_link),
+
+        // Test pattern information
+        test_requirements: jobData.test_requirements || null,
+        has_coding_test: jobData.has_coding_test || false,
+        has_aptitude_test: jobData.has_aptitude_test || false,
+        has_technical_interview: jobData.has_technical_interview || false,
+        has_hr_interview: jobData.has_hr_interview || false,
+        test_duration_minutes: jobData.test_duration_minutes || null,
+
+        // AI polish tracking (will be updated after creation)
+        ai_polished: false,
+        ai_polished_at: null,
+        original_description: jobData.full_description, // Store original before polish
       };
 
       console.log('JobsService: Inserting job data:', insertData);
@@ -94,6 +119,12 @@ class JobsService {
       }
 
       console.log('JobsService: Job listing created successfully with ID:', newJob.id);
+
+      // Trigger AI polish in background (don't wait for it)
+      this.polishJobDescriptionInBackground(newJob.id, newJob).catch(err => {
+        console.warn('JobsService: AI polish failed, job will use original description:', err);
+      });
+
       return newJob;
     } catch (error) {
       console.error('JobsService: Error in createJobListing:', error);
@@ -394,6 +425,65 @@ class JobsService {
     } catch (error) {
       console.error('Error fetching application history:', error);
       throw new Error('Failed to fetch application history');
+    }
+  }
+
+  // Background AI polish job description using DeepSeek
+  private async polishJobDescriptionInBackground(jobId: string, job: JobListing): Promise<void> {
+    try {
+      // Dynamically import deepseek service to avoid circular dependencies
+      const { deepseekService } = await import('./deepseekService');
+
+      if (!deepseekService.isConfigured()) {
+        console.log('JobsService: DeepSeek not configured, skipping AI polish');
+        return;
+      }
+
+      console.log('JobsService: Starting AI polish for job:', jobId);
+
+      // Polish the full job description
+      const polishedDescription = await deepseekService.polishJobDescription({
+        companyName: job.company_name,
+        roleTitle: job.role_title,
+        domain: job.domain,
+        description: job.full_description,
+        qualification: job.qualification,
+        experienceRequired: job.experience_required,
+      });
+
+      // Generate company description if not provided
+      let companyDescription = job.company_description;
+      if (!companyDescription) {
+        companyDescription = await deepseekService.generateCompanyDescription({
+          companyName: job.company_name,
+          roleTitle: job.role_title,
+          domain: job.domain,
+          jobDescription: job.full_description,
+          qualification: job.qualification,
+          experienceRequired: job.experience_required,
+        });
+      }
+
+      // Update job with polished content
+      const { error } = await supabase
+        .from('job_listings')
+        .update({
+          full_description: polishedDescription,
+          description: polishedDescription,
+          company_description: companyDescription,
+          ai_polished: true,
+          ai_polished_at: new Date().toISOString(),
+        })
+        .eq('id', jobId);
+
+      if (error) {
+        console.error('JobsService: Failed to update job with AI polish:', error);
+      } else {
+        console.log('JobsService: AI polish completed successfully for job:', jobId);
+      }
+    } catch (error) {
+      console.error('JobsService: Error in AI polish background task:', error);
+      // Don't throw - this is a background task
     }
   }
 

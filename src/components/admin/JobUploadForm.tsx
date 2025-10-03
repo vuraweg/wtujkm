@@ -324,9 +324,14 @@ export const JobUploadForm: React.FC = () => {
                 <div className="p-4 bg-green-50 border border-green-200 rounded-xl dark:bg-neon-cyan-500/10 dark:border-neon-cyan-400/50">
                   <div className="flex items-start">
                     <CheckCircle className="w-5 h-5 text-green-600 dark:text-neon-cyan-400 mr-3 mt-0.5" />
-                    <p className="text-green-700 dark:text-neon-cyan-300 text-sm font-medium">
-                      Job listing created successfully! Redirecting to jobs page...
-                    </p>
+                    <div>
+                      <p className="text-green-700 dark:text-neon-cyan-300 text-sm font-medium">
+                        Job listing created successfully! AI enhancement in progress...
+                      </p>
+                      <p className="text-green-600 dark:text-neon-cyan-400 text-xs mt-1">
+                        Your job description will be automatically polished and enhanced by AI.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
