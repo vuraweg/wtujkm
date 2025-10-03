@@ -1,6 +1,6 @@
 // src/components/ResumeExportSettings.tsx
 import React, { useState, useEffect } from 'react';
-import { Download, Settings, Type, Layout, Ruler, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { Download, Settings, Type, LayoutGrid as Layout, Ruler, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { ExportOptions, defaultExportOptions, LayoutType, PaperSize, layoutConfigs, paperSizeConfigs } from '../types/export';
 import { ResumePreview } from './ResumePreview';
 import { ResumeData, UserType } from '../types/resume';
