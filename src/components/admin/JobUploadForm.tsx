@@ -23,7 +23,14 @@ import {
   Image,
   RotateCw,
   Trash2,
-  Info
+  Info,
+  Mail,
+  Code,
+  Link as LinkIcon,
+  Users,
+  Award,
+  ClipboardCheck,
+  Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { jobsService } from '../../services/jobsService';
@@ -47,6 +54,22 @@ const jobListingSchema = z.object({
   full_description: z.string().min(100, 'Full description must be at least 100 characters'),
   application_link: z.string().url('Must be a valid URL'),
   is_active: z.boolean().default(true),
+
+  // Referral fields
+  referral_person_name: z.string().optional(),
+  referral_email: z.string().email('Must be a valid email').optional().or(z.literal('')),
+  referral_code: z.string().optional(),
+  referral_link: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  referral_bonus_amount: z.number().positive('Bonus amount must be positive').optional(),
+  referral_terms: z.string().optional(),
+
+  // Test pattern fields
+  test_requirements: z.string().optional(),
+  has_coding_test: z.boolean().default(false),
+  has_aptitude_test: z.boolean().default(false),
+  has_technical_interview: z.boolean().default(false),
+  has_hr_interview: z.boolean().default(false),
+  test_duration_minutes: z.number().positive('Duration must be positive').optional(),
 });
 
 type JobFormData = z.infer<typeof jobListingSchema>;
@@ -136,6 +159,22 @@ export const JobUploadForm: React.FC = () => {
         full_description: data.full_description,
         application_link: data.application_link,
         is_active: data.is_active,
+
+        // Referral information
+        referral_person_name: data.referral_person_name || undefined,
+        referral_email: data.referral_email || undefined,
+        referral_code: data.referral_code || undefined,
+        referral_link: data.referral_link || undefined,
+        referral_bonus_amount: data.referral_bonus_amount || undefined,
+        referral_terms: data.referral_terms || undefined,
+
+        // Test pattern information
+        test_requirements: data.test_requirements || undefined,
+        has_coding_test: data.has_coding_test || false,
+        has_aptitude_test: data.has_aptitude_test || false,
+        has_technical_interview: data.has_technical_interview || false,
+        has_hr_interview: data.has_hr_interview || false,
+        test_duration_minutes: data.test_duration_minutes || undefined,
       };
 
       await jobsService.createJobListing(jobData);
@@ -522,6 +561,217 @@ export const JobUploadForm: React.FC = () => {
                 {errors.application_link && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.application_link.message}</p>
                 )}
+              </div>
+
+              {/* Referral Information Section */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 p-6 rounded-xl border border-green-200 dark:border-green-800">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-green-600 dark:text-green-400" />
+                  Referral Information (Optional)
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Add employee referral contact details if someone from the company can refer candidates
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Users className="w-4 h-4 inline mr-1" />
+                      Referral Person Name
+                    </label>
+                    <input
+                      type="text"
+                      {...register('referral_person_name')}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                      placeholder="e.g., John Doe"
+                    />
+                    {errors.referral_person_name && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.referral_person_name.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Mail className="w-4 h-4 inline mr-1" />
+                      Referral Email
+                    </label>
+                    <input
+                      type="email"
+                      {...register('referral_email')}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                      placeholder="john.doe@company.com"
+                    />
+                    {errors.referral_email && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.referral_email.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Code className="w-4 h-4 inline mr-1" />
+                      Referral Code
+                    </label>
+                    <input
+                      type="text"
+                      {...register('referral_code')}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                      placeholder="e.g., REF123ABC"
+                    />
+                    {errors.referral_code && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.referral_code.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <LinkIcon className="w-4 h-4 inline mr-1" />
+                      Referral Link
+                    </label>
+                    <input
+                      type="url"
+                      {...register('referral_link')}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                      placeholder="https://company.com/referral/..."
+                    />
+                    {errors.referral_link && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.referral_link.message}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Award className="w-4 h-4 inline mr-1" />
+                      Referral Bonus Amount (₹)
+                    </label>
+                    <input
+                      type="number"
+                      {...register('referral_bonus_amount', { valueAsNumber: true })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                      placeholder="e.g., 50000"
+                      min="0"
+                    />
+                    {errors.referral_bonus_amount && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.referral_bonus_amount.message}</p>
+                    )}
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <FileText className="w-4 h-4 inline mr-1" />
+                      Referral Terms & Conditions
+                    </label>
+                    <textarea
+                      {...register('referral_terms')}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 h-20 resize-none dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                      placeholder="Terms and conditions for the referral bonus (e.g., payable after 90 days of joining)"
+                    />
+                    {errors.referral_terms && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.referral_terms.message}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Test Patterns Section */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                  <ClipboardCheck className="w-5 h-5 mr-2 text-purple-600 dark:text-purple-400" />
+                  Selection Process & Tests (Optional)
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Specify the tests and interviews candidates will face during the selection process
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <FileText className="w-4 h-4 inline mr-1" />
+                      Test Requirements Overview
+                    </label>
+                    <textarea
+                      {...register('test_requirements')}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 h-20 resize-none dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                      placeholder="Brief description of the overall selection process and what to expect"
+                    />
+                    {errors.test_requirements && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.test_requirements.message}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3 p-4 bg-white dark:bg-dark-200 rounded-lg border border-gray-200 dark:border-dark-300">
+                      <input
+                        type="checkbox"
+                        {...register('has_coding_test')}
+                        id="has_coding_test"
+                        className="form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="has_coding_test" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                        <Code className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" />
+                        Coding Test
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-4 bg-white dark:bg-dark-200 rounded-lg border border-gray-200 dark:border-dark-300">
+                      <input
+                        type="checkbox"
+                        {...register('has_aptitude_test')}
+                        id="has_aptitude_test"
+                        className="form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="has_aptitude_test" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                        <Target className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" />
+                        Aptitude Test
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-4 bg-white dark:bg-dark-200 rounded-lg border border-gray-200 dark:border-dark-300">
+                      <input
+                        type="checkbox"
+                        {...register('has_technical_interview')}
+                        id="has_technical_interview"
+                        className="form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="has_technical_interview" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                        <Sparkles className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" />
+                        Technical Interview
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-4 bg-white dark:bg-dark-200 rounded-lg border border-gray-200 dark:border-dark-300">
+                      <input
+                        type="checkbox"
+                        {...register('has_hr_interview')}
+                        id="has_hr_interview"
+                        className="form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <label htmlFor="has_hr_interview" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center">
+                        <Users className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" />
+                        HR Interview
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      Estimated Total Duration (minutes)
+                    </label>
+                    <input
+                      type="number"
+                      {...register('test_duration_minutes', { valueAsNumber: true })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                      placeholder="e.g., 120"
+                      min="0"
+                    />
+                    {errors.test_duration_minutes && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.test_duration_minutes.message}</p>
+                    )}
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Total estimated time for all tests and interviews combined
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Status */}

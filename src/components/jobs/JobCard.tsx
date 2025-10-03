@@ -18,7 +18,11 @@ import {
   AlertCircle,
   Loader2,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Users,
+  Award,
+  Code,
+  ClipboardCheck
 } from 'lucide-react';
 import { JobListing, AutoApplyResult, OptimizedResume } from '../../types/jobs';
 import { jobsService } from '../../services/jobsService';
@@ -225,6 +229,18 @@ export const JobCard: React.FC<JobCardProps> = ({
             <Clock className="w-3 h-3 mr-1" />
             {job.experience_required}
           </span>
+          {job.has_referral && (
+            <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full text-xs font-bold flex items-center shadow-md animate-pulse">
+              <Users className="w-3 h-3 mr-1" />
+              Referral Available
+            </span>
+          )}
+          {(job.has_coding_test || job.has_aptitude_test || job.has_technical_interview || job.has_hr_interview) && (
+            <span className="px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full text-xs font-medium flex items-center">
+              <ClipboardCheck className="w-3 h-3 mr-1" />
+              {[job.has_coding_test && 'Code', job.has_aptitude_test && 'Aptitude', job.has_technical_interview && 'Tech', job.has_hr_interview && 'HR'].filter(Boolean).join(' + ')}
+            </span>
+          )}
         </div>
 
         <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">

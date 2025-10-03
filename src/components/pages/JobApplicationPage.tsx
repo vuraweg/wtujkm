@@ -17,7 +17,14 @@ import {
   CheckCircle,
   Loader2,
   RefreshCw,
-  Bot
+  Bot,
+  Award,
+  Code,
+  Mail,
+  Link as LinkIcon,
+  Copy,
+  ClipboardCheck,
+  AlertCircle as AlertIcon
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { JobListing } from '../../types/jobs';
@@ -339,6 +346,204 @@ export const JobApplicationPage: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Referral Information Section */}
+        {job.has_referral && (job.referral_person_name || job.referral_email || job.referral_code || job.referral_link) && (
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-2xl shadow-lg border border-green-200 dark:border-green-800 overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-6 text-white">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Referral Available!</h2>
+                  <p className="text-green-100">Apply through employee referral for better chances</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {job.referral_person_name && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Referral Contact</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{job.referral_person_name}</p>
+                    </div>
+                  </div>
+                )}
+
+                {job.referral_email && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Mail className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Email</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{job.referral_email}</p>
+                        <button
+                          onClick={() => {navigator.clipboard.writeText(job.referral_email || '');}}
+                          className="text-green-600 hover:text-green-700 dark:text-green-400"
+                          title="Copy email"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {job.referral_code && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Code className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Referral Code</p>
+                      <div className="flex items-center space-x-2">
+                        <p className="font-mono font-bold text-lg text-green-600 dark:text-green-400">{job.referral_code}</p>
+                        <button
+                          onClick={() => {navigator.clipboard.writeText(job.referral_code || '');}}
+                          className="text-green-600 hover:text-green-700 dark:text-green-400"
+                          title="Copy code"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {job.referral_link && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <LinkIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Referral Link</p>
+                      <a
+                        href={job.referral_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:text-green-700 dark:text-green-400 font-medium flex items-center space-x-1"
+                      >
+                        <span>Open Link</span>
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {job.referral_bonus_amount && (
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Award className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Referral Bonus</p>
+                      <p className="font-bold text-xl text-green-600 dark:text-green-400">₹{job.referral_bonus_amount.toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {job.referral_terms && (
+                <div className="mt-6 p-4 bg-white dark:bg-dark-100 rounded-lg border border-green-200 dark:border-green-800">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Terms & Conditions</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{job.referral_terms}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Test Patterns Section */}
+        {(job.has_coding_test || job.has_aptitude_test || job.has_technical_interview || job.has_hr_interview) && (
+          <div className="bg-white dark:bg-dark-100 rounded-2xl shadow-lg border border-gray-200 dark:border-dark-300 overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <ClipboardCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Selection Process</h2>
+                  <p className="text-purple-100">Prepare for the following assessments</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {job.test_requirements && (
+                <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{job.test_requirements}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {job.has_coding_test && (
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/10 dark:to-cyan-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                      <Code className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">Coding Test</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Technical assessment</p>
+                    </div>
+                  </div>
+                )}
+
+                {job.has_aptitude_test && (
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-lg border border-green-200 dark:border-green-800">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                      <Target className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">Aptitude Test</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Logical reasoning</p>
+                    </div>
+                  </div>
+                )}
+
+                {job.has_technical_interview && (
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-lg border border-purple-200 dark:border-purple-800">
+                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">Technical Interview</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">In-depth discussion</p>
+                    </div>
+                  </div>
+                )}
+
+                {job.has_hr_interview && (
+                  <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/10 dark:to-red-900/10 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                      <Users className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">HR Interview</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Cultural fit assessment</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {job.test_duration_minutes && (
+                <div className="flex items-center space-x-2 p-4 bg-gray-50 dark:bg-dark-200 rounded-lg">
+                  <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <span className="text-gray-700 dark:text-gray-300">
+                    <span className="font-semibold">Estimated Duration:</span> {job.test_duration_minutes} minutes ({Math.floor(job.test_duration_minutes / 60)}h {job.test_duration_minutes % 60}min)
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">

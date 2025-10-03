@@ -23,6 +23,28 @@ export interface JobListing {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+
+  // Referral Information
+  referral_person_name?: string;
+  referral_email?: string;
+  referral_code?: string;
+  referral_link?: string;
+  referral_bonus_amount?: number;
+  referral_terms?: string;
+  has_referral?: boolean;
+
+  // Test Pattern Information
+  test_requirements?: string;
+  has_coding_test?: boolean;
+  has_aptitude_test?: boolean;
+  has_technical_interview?: boolean;
+  has_hr_interview?: boolean;
+  test_duration_minutes?: number;
+
+  // AI Polish Information
+  ai_polished?: boolean;
+  ai_polished_at?: string;
+  original_description?: string;
 }
 
 export interface OptimizedResume {
@@ -100,4 +122,30 @@ export interface ApplicationHistory {
     total: number;
     hasMore: boolean;
   };
+}
+
+export interface TestPattern {
+  id: string;
+  test_name: string;
+  test_type: 'coding' | 'aptitude' | 'technical_interview' | 'hr_interview' | 'other';
+  domain: string;
+  difficulty_level?: 'easy' | 'medium' | 'hard';
+  description?: string;
+  sample_questions?: any;
+  duration_minutes?: number;
+  passing_score?: number;
+  tips?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobTestPattern {
+  id: string;
+  job_listing_id: string;
+  test_pattern_id: string;
+  is_mandatory: boolean;
+  display_order: number;
+  created_at: string;
+  test_pattern?: TestPattern;
 }
