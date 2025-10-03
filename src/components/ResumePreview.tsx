@@ -363,11 +363,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const getSectionOrder = () => {
     if (userType === 'experienced') {
-      return ['summary', 'skills', 'workExperience', 'projects', 'certifications', 'education', 'additionalSections'];
+      return ['summary', 'education', 'workExperience', 'projects', 'skills', 'certifications', 'additionalSections'];
     } else if (userType === 'student') {
-      return ['careerObjective', 'education', 'skills', 'projects', 'workExperience', 'certifications', 'achievementsAndExtras', 'additionalSections'];
+      return ['careerObjective', 'education', 'workExperience', 'projects', 'skills', 'certifications', 'achievementsAndExtras', 'additionalSections'];
     } else { // 'fresher'
-      return ['careerObjective', 'education', 'skills', 'projects', 'workExperience', 'certifications', 'achievementsAndExtras', 'additionalSections'];
+      return ['careerObjective', 'education', 'workExperience', 'projects', 'skills', 'certifications', 'achievementsAndExtras', 'additionalSections'];
     }
   };
 
@@ -678,6 +678,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               textTransform: 'uppercase',
               wordWrap: 'break-word',
               overflow: 'hidden',
+              color: '#000000',
             }}>
               {resumeData.name}
             </h1>
@@ -696,6 +697,7 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 maxWidth: '100%',
                 overflow: 'hidden',
                 wordBreak: 'break-word',
+                color: '#000000',
               }}>
                 {contactElements}
               </div>

@@ -257,7 +257,7 @@ export const ResumeExportSettings: React.FC<ResumeExportSettingsProps> = ({
 
       {/* Right Side - Live Preview */}
       <div className="bg-gray-50 rounded-xl p-4 h-full flex flex-col dark:bg-dark-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center dark:text-gray-100">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center dark:text-white">
           <Layout className="w-5 h-5 mr-2 text-green-600 dark:text-neon-green-400" />
           Live Preview
         </h3>
