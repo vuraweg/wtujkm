@@ -214,23 +214,59 @@ export const JobApplicationPage: React.FC = () => {
         <div className="bg-white dark:bg-dark-100 rounded-2xl shadow-xl overflow-hidden mb-8">
           <div className="p-8 border-b border-gray-200 dark:border-dark-300">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-              <div className="flex items-start space-x-4 mb-4 md:mb-0">
-                {job.company_logo_url ? (
-                  <div className="w-20 h-20 bg-white dark:bg-dark-200 rounded-xl border-2 border-gray-200 dark:border-dark-300 flex items-center justify-center p-3 shadow-lg">
-                    <img
-                      src={job.company_logo_url}
-                      alt={`${job.company_name} logo`}
-                      className="max-w-full max-h-full object-contain"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if (parent) {
-                          parent.innerHTML = `<div class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-2xl">${job.company_name.charAt(0)}</div>`;
-                        }
-                      }}
-                    />
-                  </div>
+  <div className="flex items-start space-x-4 mb-4 md:mb-0">
+    {job.company_logo_url ? (
+      <div className="w-20 h-20 bg-white dark:bg-dark-200 rounded-xl border-2 border-gray-200 dark:border-dark-300 flex items-center justify-center p-3 shadow-lg">
+        <img
+          src={job.company_logo_url}
+          alt={`${job.company_name} logo`}
+          className="max-w-full max-h-full object-contain"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const parent = target.parentElement;
+            if (parent) {
+              parent.innerHTML = `<div class="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-2xl">${job.company_name.charAt(0)}</div>`;
+            }
+          }}
+        />
+      </div>
+    ) : (
+      <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
+        {job.company_name.charAt(0)}
+      </div>
+    )}
+    <div>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        {job.role_title}
+      </h1>
+      <p className="text-xl text-gray-700 dark:text-gray-300 font-medium">
+        {job.company_name}
+      </p>
+    </div>
+  </div>
+
+  {/* 💰 CTC + Apply Button Section */}
+  <div className="flex items-center space-x-4">
+    {formatPackage() && (
+      <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 px-5 py-2.5 rounded-xl text-lg font-bold shadow-md">
+        {formatPackage()}
+      </div>
+    )}
+    <button
+      onClick={() => {
+        const element = document.getElementById("application-method");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }}
+      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+    >
+      Apply Now
+    </button>
+  </div>
+</div>
+
                 ) : (
                   <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
                     {job.company_name.charAt(0)}
@@ -531,7 +567,7 @@ export const JobApplicationPage: React.FC = () => {
           </div>
         )}
 
-        <div className="mb-8">
+        <div id="application-method" className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">
             Choose Your Application Method
           </h2>
