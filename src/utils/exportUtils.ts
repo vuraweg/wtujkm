@@ -628,24 +628,28 @@ export const exportToPDF = async (resumeData: ResumeData, userType: UserType = '
       drawCareerObjective(state, resumeData.careerObjective, PDF_CONFIG);
     }
 
+    // Align section order with ResumePreview.tsx
     if (userType === 'experienced') {
-        drawSkills(state, resumeData.skills, PDF_CONFIG);
+        // Preview order: summary, education, workExperience, projects, skills, certifications
+        drawEducation(state, resumeData.education, PDF_CONFIG);
         drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
         drawProjects(state, resumeData.projects, PDF_CONFIG);
+        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawCertifications(state, resumeData.certifications, PDF_CONFIG);
-        drawEducation(state, resumeData.education, PDF_CONFIG);
     } else if (userType === 'student') {
+        // Preview order: careerObjective, education, workExperience, projects, skills, certifications, achievements
         drawEducation(state, resumeData.education, PDF_CONFIG);
-        drawSkills(state, resumeData.skills, PDF_CONFIG);
-        drawProjects(state, resumeData.projects, PDF_CONFIG);
         drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
+        drawProjects(state, resumeData.projects, PDF_CONFIG);
+        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawCertifications(state, resumeData.certifications, PDF_CONFIG);
         drawAchievementsAndExtras(state, resumeData, PDF_CONFIG);
     } else { // Fresher
+        // Preview order: careerObjective, education, workExperience, projects, skills, certifications, achievements
         drawEducation(state, resumeData.education, PDF_CONFIG);
-        drawSkills(state, resumeData.skills, PDF_CONFIG);
-        drawProjects(state, resumeData.projects, PDF_CONFIG);
         drawWorkExperience(state, resumeData.workExperience, userType, PDF_CONFIG);
+        drawProjects(state, resumeData.projects, PDF_CONFIG);
+        drawSkills(state, resumeData.skills, PDF_CONFIG);
         drawCertifications(state, resumeData.certifications, PDF_CONFIG);
         drawAchievementsAndExtras(state, resumeData, PDF_CONFIG);
     }
@@ -888,22 +892,23 @@ const generateWordHTMLContent = (data: ResumeData, userType: UserType = 'experie
   ` : '';
 
   if (userType === 'experienced') {
+    // Match ResumePreview order
     sectionOrderHtml = `
       ${summaryHtml}
-      ${skillsHtml}
+      ${educationHtml}
       ${workExperienceHtml}
       ${projectsHtml}
+      ${skillsHtml}
       ${certificationsHtml}
-      ${educationHtml}
       ${additionalSectionsHtml}
     `;
   } else if (userType === 'student') {
     sectionOrderHtml = `
       ${careerObjectiveHtml}
       ${educationHtml}
-      ${skillsHtml}
-      ${projectsHtml}
       ${workExperienceHtml}
+      ${projectsHtml}
+      ${skillsHtml}
       ${certificationsHtml}
       ${achievementsHtml}
       ${additionalSectionsHtml}
@@ -912,9 +917,9 @@ const generateWordHTMLContent = (data: ResumeData, userType: UserType = 'experie
     sectionOrderHtml = `
       ${careerObjectiveHtml}
       ${educationHtml}
-      ${skillsHtml}
       ${workExperienceHtml}
       ${projectsHtml}
+      ${skillsHtml}
       ${certificationsHtml}
       ${achievementsHtml}
       ${additionalSectionsHtml}
@@ -1065,4 +1070,3 @@ const generateWordHTMLContent = (data: ResumeData, userType: UserType = 'experie
     </html>
   `;
 };
-
