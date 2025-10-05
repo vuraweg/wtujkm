@@ -287,7 +287,7 @@ export const JobCard: React.FC<JobCardProps> = ({
           </div>
         )}
 
-        <div className="space-y-3">
+        <div className="flex space-y-3">
           <button
             onClick={handleManualApplyClick}
             disabled={isOptimizing}
