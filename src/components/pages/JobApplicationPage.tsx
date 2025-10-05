@@ -544,7 +544,7 @@ export const JobApplicationPage: React.FC = () => {
           </div>
         )}
 
-        <div className="mb-8">
+        <div id="application-method" className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">
             Choose Your Application Method
           </h2>
