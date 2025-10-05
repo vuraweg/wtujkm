@@ -601,15 +601,26 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
               <div key={sectionIndex} style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.sectionSpacingAfter) }}>
                 <h2 style={sectionTitleStyle}>{section.title.toUpperCase()}</h2>
                 <div style={sectionUnderlineStyle}></div>
-                {section.bullets && section.bullets.length > 0 && (
-                  <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}>
-                    {section.bullets.map((bullet, bulletIndex) => (
-                      <li key={bulletIndex} style={listItemStyle}>
-                        <span>{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+              {section.bullets && section.bullets.length > 0 && (
+  <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}>
+    {section.bullets.map((bullet, bulletIndex) => {
+      // Handle cases where bullet is a string, object, or other format
+      const bulletText =
+        typeof bullet === 'string'
+          ? bullet
+          : bullet && typeof bullet === 'object'
+          ? bullet.title || bullet.text || JSON.stringify(bullet)
+          : String(bullet);
+
+      return (
+        <li key={bulletIndex} style={listItemStyle}>
+          <span>{bulletText}</span>
+        </li>
+      );
+    })}
+  </ul>
+)}
+
               </div>
             ))}
           </>
