@@ -167,6 +167,10 @@ const asText = (v: any): string => {
   // NEW STATE: To control visibility of the new ExportOptionsModal
   const [showExportOptionsModal, setShowExportOptionsModal] = useState(false);
 
+  // NEW STATE: Auto-save tracking
+  const [lastSavedData, setLastSavedData] = useState<string>('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
 
   const userName = (user as any)?.user_metadata?.name || '';
   const userEmail = user?.email || ''; // Correctly accesses email from user object
@@ -219,6 +223,18 @@ const asText = (v: any): string => {
     setCurrentSectionIndex(0); // Reset to first section
     setActiveTab('resume');
     setOptimizationInterrupted(false);
+
+    // Clear localStorage draft
+    try {
+      localStorage.removeItem('guidedResumeBuilder_draft');
+      localStorage.removeItem('guidedResumeBuilder_userType');
+      localStorage.removeItem('guidedResumeBuilder_sectionIndex');
+      setLastSavedData('');
+      setSaveStatus('idle');
+      console.log('[Auto-Save] Draft cleared from localStorage');
+    } catch (error) {
+      console.error('[Auto-Save] Failed to clear draft:', error);
+    }
   }, []);
 
   const checkSubscriptionStatus = useCallback(async () => { // Memoize
@@ -239,7 +255,73 @@ const asText = (v: any): string => {
     } else {
       setLoadingSubscription(false);
     }
-  }, [isAuthenticated, user, checkSubscriptionStatus]); // Add checkSubscriptionStatus to dependencies
+  }, [isAuthenticated, user, checkSubscriptionStatus]);
+
+  // NEW: Auto-save resume data to localStorage with debounce
+  useEffect(() => {
+    if (!optimizedResume) return;
+
+    const currentData = JSON.stringify(optimizedResume);
+
+    // Skip if data hasn't changed
+    if (currentData === lastSavedData) {
+      return;
+    }
+
+    // Debounce auto-save
+    const saveTimer = setTimeout(() => {
+      try {
+        setSaveStatus('saving');
+        localStorage.setItem('guidedResumeBuilder_draft', currentData);
+        localStorage.setItem('guidedResumeBuilder_userType', userType);
+        localStorage.setItem('guidedResumeBuilder_sectionIndex', currentSectionIndex.toString());
+        setLastSavedData(currentData);
+        setSaveStatus('saved');
+
+        console.log('[Auto-Save] Resume data saved to localStorage');
+
+        // Reset status after 2 seconds
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch (error) {
+        console.error('[Auto-Save] Failed to save resume data:', error);
+        setSaveStatus('idle');
+      }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(saveTimer);
+  }, [optimizedResume, userType, currentSectionIndex, lastSavedData]);
+
+  // NEW: Load draft data on component mount
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem('guidedResumeBuilder_draft');
+      const savedUserType = localStorage.getItem('guidedResumeBuilder_userType');
+      const savedSectionIndex = localStorage.getItem('guidedResumeBuilder_sectionIndex');
+
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        // Only restore if the current resume is empty (user hasn't started yet)
+        if (!optimizedResume?.name && !optimizedResume?.email) {
+          setOptimizedResume(parsedData);
+          setLastSavedData(savedData);
+          console.log('[Auto-Restore] Draft resume data restored from localStorage');
+        }
+      }
+
+      if (savedUserType) {
+        setUserType(savedUserType as UserType);
+      }
+
+      if (savedSectionIndex) {
+        const index = parseInt(savedSectionIndex, 10);
+        if (!isNaN(index) && index >= 0 && index < resumeSections.length) {
+          setCurrentSectionIndex(index);
+        }
+      }
+    } catch (error) {
+      console.error('[Auto-Restore] Failed to restore draft data:', error);
+    }
+  }, []); // Run only once on mount // Add checkSubscriptionStatus to dependencies
 
   // Debug: Log optimizedResume changes
   useEffect(() => {
@@ -579,26 +661,113 @@ const asText = (v: any): string => {
     setWalletRefreshKey(prevKey => prevKey + 1);
   }, [checkSubscriptionStatus, onShowPlanSelection]); // Dependencies for memoized function
 
-  const handleExportFile = useCallback(async (options: ExportOptions, format: 'pdf' | 'word') => {
-    // MODIFIED: Add authentication check
-    if (!isAuthenticated) {
-      alert('Please sign in to download your resume.');
-      onShowAuth(); // Prompt user to sign in
-      return; // Stop the function execution
+  // NEW: Validate and consolidate resume data before export
+  const validateAndConsolidateResumeData = useCallback((): ResumeData | null => {
+    if (!optimizedResume) {
+      console.error('[Export] No resume data available');
+      return null;
     }
 
-    if (!optimizedResume) return;
-    
-    // ADDED: Debug logging for export data
-    console.log('[ResumeOptimizer] handleExportFile - optimizedResume data being exported:', optimizedResume);
-    console.log('[ResumeOptimizer] Contact details in export data:');
-    console.log('  - name:', optimizedResume.name);
-    console.log('  - - phone:', optimizedResume.phone);
-    console.log('  - email:', optimizedResume.email);
-    console.log('  - linkedin:', optimizedResume.linkedin);
-    console.log('  - github:', optimizedResume.github);
-    console.log('  - location:', optimizedResume.location);
-    
+    // Create a deep copy to avoid mutations
+    const consolidatedResume: ResumeData = {
+      name: optimizedResume.name?.trim() || '',
+      phone: optimizedResume.phone?.trim() || '',
+      email: optimizedResume.email?.trim() || '',
+      linkedin: optimizedResume.linkedin?.trim() || '',
+      github: optimizedResume.github?.trim() || '',
+      location: optimizedResume.location?.trim() || '',
+
+      // Ensure arrays exist with proper filtering
+      education: (optimizedResume.education || []).filter(edu =>
+        edu.degree?.trim() || edu.school?.trim()
+      ),
+
+      workExperience: (optimizedResume.workExperience || []).filter(work =>
+        work.role?.trim() || work.company?.trim()
+      ).map(work => ({
+        ...work,
+        bullets: (work.bullets || []).filter(bullet => bullet?.trim())
+      })),
+
+      projects: (optimizedResume.projects || []).filter(proj =>
+        proj.title?.trim()
+      ).map(proj => ({
+        ...proj,
+        bullets: (proj.bullets || []).filter(bullet => bullet?.trim())
+      })),
+
+      skills: (optimizedResume.skills || []).filter(skill =>
+        skill.category?.trim() && skill.list && skill.list.length > 0
+      ),
+
+      certifications: (optimizedResume.certifications || []).filter(cert => {
+        if (typeof cert === 'string') return cert?.trim();
+        return cert?.title?.trim();
+      }),
+
+      additionalSections: (optimizedResume.additionalSections || []).filter(section =>
+        section.title?.trim() && section.bullets && section.bullets.length > 0
+      ).map(section => ({
+        ...section,
+        bullets: section.bullets.filter(bullet => bullet?.trim())
+      })),
+
+      summary: optimizedResume.summary?.trim() || '',
+      careerObjective: optimizedResume.careerObjective?.trim() || '',
+      achievements: (optimizedResume.achievements || []).filter(ach => ach?.trim()),
+      targetRole: optimizedResume.targetRole?.trim() || ''
+    };
+
+    // Log consolidated data for debugging
+    console.log('[Export] Consolidated Resume Data:', {
+      name: consolidatedResume.name,
+      contact: {
+        phone: consolidatedResume.phone,
+        email: consolidatedResume.email,
+        linkedin: consolidatedResume.linkedin,
+        github: consolidatedResume.github,
+        location: consolidatedResume.location
+      },
+      sections: {
+        education: consolidatedResume.education.length,
+        workExperience: consolidatedResume.workExperience.length,
+        projects: consolidatedResume.projects.length,
+        skills: consolidatedResume.skills.length,
+        certifications: consolidatedResume.certifications.length,
+        additionalSections: consolidatedResume.additionalSections.length,
+        summary: !!consolidatedResume.summary,
+        careerObjective: !!consolidatedResume.careerObjective,
+        achievements: consolidatedResume.achievements.length
+      }
+    });
+
+    // Validate minimum requirements
+    if (!consolidatedResume.name) {
+      alert('Name is required to export your resume.');
+      return null;
+    }
+
+    if (!consolidatedResume.email && !consolidatedResume.phone) {
+      alert('At least one contact method (email or phone) is required to export your resume.');
+      return null;
+    }
+
+    return consolidatedResume;
+  }, [optimizedResume]);
+
+  const handleExportFile = useCallback(async (options: ExportOptions, format: 'pdf' | 'word') => {
+    if (!isAuthenticated) {
+      alert('Please sign in to download your resume.');
+      onShowAuth();
+      return;
+    }
+
+    // Validate and consolidate data before export
+    const validatedResume = validateAndConsolidateResumeData();
+    if (!validatedResume) {
+      return;
+    }
+
     if (format === 'pdf') {
       if (isExportingPDF || isExportingWord) return;
       setIsExportingPDF(true);
@@ -606,33 +775,47 @@ const asText = (v: any): string => {
       if (isExportingWord || isExportingPDF) return;
       setIsExportingWord(true);
     }
-    
+
     setExportStatus({ type: null, status: null, message: '' });
-    
+
     try {
+      console.log(`[Export] Starting ${format.toUpperCase()} export with validated data`);
+
       if (format === 'pdf') {
-        await exportToPDF(optimizedResume, userType, options);
+        await exportToPDF(validatedResume, userType, options);
       } else {
-        await exportToWord(optimizedResume, userType);
+        await exportToWord(validatedResume, userType);
       }
-      
+
+      console.log(`[Export] ${format.toUpperCase()} export completed successfully`);
+
       setExportStatus({
         type: format,
         status: 'success',
         message: `${format.toUpperCase()} exported successfully!`
       });
-      
+
+      // Clear draft after successful export
+      try {
+        localStorage.removeItem('guidedResumeBuilder_draft');
+        localStorage.removeItem('guidedResumeBuilder_userType');
+        localStorage.removeItem('guidedResumeBuilder_sectionIndex');
+        console.log('[Export] Draft cleared after successful export');
+      } catch (error) {
+        console.error('[Export] Failed to clear draft:', error);
+      }
+
       setTimeout(() => {
         setExportStatus({ type: null, status: null, message: '' });
       }, 3000);
     } catch (error) {
-      console.error(`${format.toUpperCase()} export failed:`, error);
+      console.error(`[Export] ${format.toUpperCase()} export failed:`, error);
       setExportStatus({
         type: format,
         status: 'error',
-        message: 'PDF export failed. Please try again.'
+        message: `${format.toUpperCase()} export failed. Please try again.`
       });
-      
+
       setTimeout(() => { setExportStatus({ type: null, status: null, message: '' }); }, 5000);
     } finally {
       if (format === 'pdf') {
@@ -641,7 +824,7 @@ const asText = (v: any): string => {
         setIsExportingWord(false);
       }
     }
-  }, [isAuthenticated, onShowAuth, optimizedResume, userType, isExportingPDF, isExportingWord]); // Added isAuthenticated and onShowAuth to dependencies
+  }, [isAuthenticated, onShowAuth, validateAndConsolidateResumeData, userType, isExportingPDF, isExportingWord]);
 
   if (showMobileInterface && optimizedResume) {
     const mobileSections = [
@@ -2588,8 +2771,22 @@ const handleGenerateProjectBullets = async (
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   Guided Resume Builder
                 </h2>
-                <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Step {currentSectionIndex + 1} of {resumeSections.length}
+                <div className="flex items-center space-x-3">
+                  {saveStatus === 'saving' && (
+                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Saving...
+                    </span>
+                  )}
+                  {saveStatus === 'saved' && (
+                    <span className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Saved
+                    </span>
+                  )}
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Step {currentSectionIndex + 1} of {resumeSections.length}
+                  </div>
                 </div>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-dark-300">
