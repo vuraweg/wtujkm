@@ -263,7 +263,6 @@ export const JobApplicationPage: React.FC = () => {
       Apply Now
     </button>
   </div>
-              )}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
