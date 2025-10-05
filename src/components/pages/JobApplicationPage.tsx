@@ -289,10 +289,7 @@ export const JobApplicationPage: React.FC = () => {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
                 <span>About the Company</span>
                 {(!job.company_description || job.company_description.trim() === '') && (
-                  <span className="inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-full">
-                    <Bot className="w-3 h-3" />
-                    <span>AI-Powered</span>
-                  </span>
+                  
                 )}
               </h2>
               {!generatingDescription && (
@@ -301,8 +298,7 @@ export const JobApplicationPage: React.FC = () => {
                   className="flex items-center space-x-2 px-4 py-2 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200"
                   title="Generate AI description"
                 >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>Generate</span>
+                  
                 </button>
               )}
             </div>
