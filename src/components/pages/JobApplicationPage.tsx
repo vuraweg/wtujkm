@@ -290,8 +290,7 @@ export const JobApplicationPage: React.FC = () => {
                 <span>About the Company</span>
                 {(!job.company_description || job.company_description.trim() === '') && (
                   <span className="inline-flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-full">
-                    <Bot className="w-3 h-3" />
-                    <span>AI-Powered</span>
+                  
                   </span>
                 )}
               </h2>
