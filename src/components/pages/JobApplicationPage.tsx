@@ -248,6 +248,25 @@ export const JobApplicationPage: React.FC = () => {
               {formatPackage() && (
                 <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 px-6 py-3 rounded-xl text-lg font-bold shadow-md">
                   {formatPackage()}
+
+                  <div className="flex items-center space-x-4">
+    {formatPackage() && (
+      <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 px-5 py-2.5 rounded-xl text-lg font-bold shadow-md">
+        {formatPackage()}
+      </div>
+    )}
+    <button
+      onClick={() => {
+        const element = document.getElementById("application-method");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }}
+      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+    >
+      Apply Now
+    </button>
+  </div>
                 </div>
               )}
             </div>
