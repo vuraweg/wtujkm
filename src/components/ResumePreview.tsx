@@ -91,6 +91,7 @@ interface ResumePreviewProps {
   exportOptions?: ExportOptions;
   showControls?: boolean;
   onScaleChange?: (scale: number) => void;
+  defaultZoom?: number;
 }
 
 export const ResumePreview: React.FC<ResumePreviewProps> = ({
@@ -98,7 +99,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
   userType = 'experienced',
   exportOptions,
   showControls = false,
-  onScaleChange
+  onScaleChange,
+  defaultZoom = 0.98
 }) => {
   // Use defaultExportOptions if exportOptions is not provided
   const currentExportOptions = exportOptions || defaultExportOptions;
@@ -106,8 +108,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const contentWrapperRef = useRef<HTMLDivElement>(null);
   const resumeContentRef = useRef<HTMLDivElement>(null);
-  const [scaleFactor, setScaleFactor] = useState(1);
-  const [autoScaleFactor, setAutoScaleFactor] = useState(1);
+  const [scaleFactor, setScaleFactor] = useState(defaultZoom);
+  const [autoScaleFactor, setAutoScaleFactor] = useState(defaultZoom);
   const [isScaling, setIsScaling] = useState(true);
   const [manualZoom, setManualZoom] = useState(false);
 
@@ -127,8 +129,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
         const scaleX = availableWidth / resumeNaturalWidthPx;
         const scaleY = availableHeight / resumeNaturalHeightPx;
 
-        // Use the smaller scale factor with 0.95 multiplier for optimal fit
-        const optimalScale = Math.min(scaleX, scaleY) * 0.95;
+        // Use the smaller scale factor with defaultZoom multiplier for optimal fit
+        const optimalScale = Math.min(scaleX, scaleY) * defaultZoom;
 
         // Allow scaling down but prevent scaling up beyond original size
         const finalScale = Math.min(optimalScale, 1);

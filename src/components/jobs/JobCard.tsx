@@ -287,11 +287,11 @@ export const JobCard: React.FC<JobCardProps> = ({
           </div>
         )}
 
-        <div className="flex space-x-3">
+        <div className="space-y-3">
           <button
             onClick={handleManualApplyClick}
             disabled={isOptimizing}
-            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
+            className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
               isOptimizing
                 ? 'bg-gray-400 text-white cursor-not-allowed'
                 : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl'
@@ -312,12 +312,20 @@ export const JobCard: React.FC<JobCardProps> = ({
 
           <button
             disabled={true}
-            className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 bg-gray-300 text-gray-600 cursor-not-allowed relative overflow-hidden dark:bg-gray-700 dark:text-gray-400"
+            className="w-full py-3 px-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 bg-gray-300 text-gray-600 cursor-not-allowed relative overflow-hidden dark:bg-gray-700 dark:text-gray-400"
             title="Feature launching soon"
           >
             <Sparkles className="w-4 h-4 animate-pulse" />
             <span>AUTO Apply</span>
             <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-bl-lg font-bold">COMING SOON</div>
+          </button>
+
+          <button
+            onClick={() => navigate(`/jobs/${job.id}`)}
+            className="w-full py-2 px-4 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700 dark:from-purple-900/30 dark:to-pink-900/30 dark:text-purple-300 border border-purple-200 dark:border-purple-700"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Generate with AI</span>
           </button>
         </div>
         

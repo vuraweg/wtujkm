@@ -651,7 +651,7 @@ const asText = (v: any): string => {
         icon: <FileText className="w-5 h-5" />,
         component: (
           <>
-            {optimizedResume ? <ResumePreview resumeData={optimizedResume} userType={userType} /> : null}
+            {optimizedResume ? <ResumePreview resumeData={optimizedResume} userType={userType} defaultZoom={0.98} /> : null}
             {optimizedResume && (
               <ExportButtons
                 resumeData={optimizedResume}
@@ -2531,11 +2531,23 @@ const handleGenerateProjectBullets = async (
           <span>Download Resume</span>
         </button>
 
+        {/* Apply Now Button - Redirects to Jobs Page */}
+        <button
+          onClick={() => navigate('/jobs')}
+          className="w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-3
+            bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-xl hover:shadow-2xl cursor-pointer"
+          type="button"
+        >
+          <Briefcase className="w-6 h-6" />
+          <span>Apply Now</span>
+          <ArrowRight className="w-5 h-5" />
+        </button>
+
         {/* Apply JD-Based Optimization Button */}
         <button
           onClick={() => navigate('/optimizer')}
           className="w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center space-x-3
-            bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl hover:shadow-2xl cursor-pointer"
+            bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-xl hover:shadow-2xl cursor-pointer"
           type="button"
         >
           <Target className="w-6 h-6" />
@@ -2642,6 +2654,7 @@ const handleGenerateProjectBullets = async (
                     resumeData={optimizedResume}
                     userType={userType}
                     showControls={true}
+                    defaultZoom={0.98}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-center px-6 py-12 text-gray-500 dark:text-gray-400">

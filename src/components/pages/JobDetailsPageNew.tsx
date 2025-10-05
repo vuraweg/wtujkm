@@ -260,16 +260,25 @@ export const JobDetailsPageNew: React.FC<JobDetailsPageProps> = ({ onShowAuth })
                 </div>
 
                 {job.package_amount && job.package_type && (
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-lg">
-                      <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-lg">
+                        <Award className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Package</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                          {formatSalary(job.package_amount, job.package_type)}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Package</p>
-                      <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
-                        {formatSalary(job.package_amount, job.package_type)}
-                      </p>
-                    </div>
+                    <button
+                      onClick={handleApplyClick}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2 text-sm"
+                    >
+                      <Briefcase className="w-4 h-4" />
+                      <span>Apply Now</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -472,19 +481,17 @@ export const JobDetailsPageNew: React.FC<JobDetailsPageProps> = ({ onShowAuth })
           {/* Right Column - Sticky Apply Card */}
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-4">
-              {/* Apply Now Card */}
+              {/* Apply Info Card */}
               <div className="bg-white dark:bg-dark-100 rounded-2xl shadow-lg border border-gray-100 dark:border-dark-300 p-6">
-                <button
-                  onClick={handleApplyClick}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
-                >
-                  <Briefcase className="w-5 h-5" />
-                  <span>Apply Now</span>
-                </button>
-
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-dark-300">
-                  <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                    Choose between manual or AI-optimized application
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    Ready to Apply?
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Choose between manual or AI-optimized application for better chances
                   </p>
                 </div>
               </div>

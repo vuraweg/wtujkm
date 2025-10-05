@@ -15,14 +15,16 @@ export const Navigation: React.FC<NavigationProps> = ({ onPageChange }) => { // 
   const navigate = useNavigate(); // Initialize useNavigate
 
   const navigationItems = [
-    { id: '/', label: 'Home', icon: <Home className="w-4 h-4" /> }, // MODIFIED: id to path
-   
-    { id: '/about', label: 'About Us', icon: <Info className="w-4 h-4" /> }, // MODIFIED: id to path
-    { id: '/careers', label: 'Careers', icon: <Users className="w-4 h-4" /> }, // ADDED: careers link
-    { id: '/jobs', label: 'Explore Jobs', icon: <Briefcase className="w-4 h-4" /> }, // ADDED: jobs link
-    { id: '/tutorials', label: 'Tutorials', icon: <BookOpen className="w-4 h-4" /> }, // MODIFIED: id to path
-    { id: '/contact', label: 'Contact', icon: <Phone className="w-4 h-4" /> }, // MODIFIED: id to path
-    ...(isAuthenticated ? [{ id: '/jobs/applications', label: 'My Applications', icon: <FileText className="w-4 h-4" /> }] : []), // ADDED: applications link
+    { id: '/', label: 'Home', icon: <Home className="w-4 h-4" /> },
+    { id: '/jobs', label: 'Explore Jobs', icon: <Briefcase className="w-4 h-4" /> },
+    { id: '/tutorials', label: 'Tutorials', icon: <BookOpen className="w-4 h-4" /> },
+  ];
+
+  const dashboardItems = [
+    { id: '/about', label: 'About Us', icon: <Info className="w-4 h-4" /> },
+    { id: '/careers', label: 'Careers', icon: <Users className="w-4 h-4" /> },
+    { id: '/contact', label: 'Contact', icon: <Phone className="w-4 h-4" /> },
+    ...(isAuthenticated ? [{ id: '/jobs/applications', label: 'My Applications', icon: <FileText className="w-4 h-4" /> }] : []),
   ];
 
   const aiTools = [
