@@ -290,11 +290,7 @@ export const JobApplicationPage: React.FC = () => {
                 <span>About the Company</span>
                 
               </h2>
-              {!generatingDescription && (
-                
-                
-                </button>
-              )}
+            
             </div>
 
             {generatingDescription ? (
