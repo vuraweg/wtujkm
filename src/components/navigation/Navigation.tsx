@@ -118,7 +118,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onPageChange }) => {
           className="flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-300 dark:hover:text-neon-cyan-400 dark:hover:bg-dark-200 transition-all duration-200"
         >
           <LayoutDashboard className="w-4 h-4" />
-          <span>Dashboard</span>
+          <span>Primo space</span>
           <ChevronDown className="w-4 h-4" />
         </button>
 
