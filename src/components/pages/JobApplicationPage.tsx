@@ -245,7 +245,7 @@ export const JobApplicationPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4">
     {formatPackage() && (
       <div className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 px-5 py-2.5 rounded-xl text-lg font-bold shadow-md">
         {formatPackage()}
@@ -263,9 +263,6 @@ export const JobApplicationPage: React.FC = () => {
       Apply Now
     </button>
   </div>
-
-                  
-                </div>
               )}
             </div>
 
