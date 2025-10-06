@@ -426,12 +426,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 {job.bullets && job.bullets.length > 0 && (
                   <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc', paddingLeft: '0' }}>
                     {job.bullets.map((bullet, bulletIndex) => {
-                      // Ensure bullets are always rendered as strings
+                      // Ensure bullets are always rendered as strings and handle various shapes
+                      const bulletObj = (bullet && typeof bullet === 'object') ? (bullet as any) : null;
                       const bulletText = typeof bullet === 'string'
                         ? bullet
-                        : (bullet && typeof bullet === 'object' && 'description' in bullet)
-                          ? (bullet as any).description
-                          : String(bullet);
+                        : bulletObj && (bulletObj.description || bulletObj.title || bulletObj.text)
+                          ? (bulletObj.description || bulletObj.title || bulletObj.text)
+                          : JSON.stringify(bullet);
                       return (
                         <li key={bulletIndex} style={listItemStyle}>
                           <span>{bulletText}</span>
@@ -492,12 +493,13 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
                 {project.bullets && project.bullets.length > 0 && (
                   <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}> {/* Changed to disc */}
                     {project.bullets.map((bullet, bulletIndex) => {
-                      // Ensure bullets are always rendered as strings
+                      // Ensure bullets are always rendered as strings and handle various shapes
+                      const bulletObj = (bullet && typeof bullet === 'object') ? (bullet as any) : null;
                       const bulletText = typeof bullet === 'string'
                         ? bullet
-                        : (bullet && typeof bullet === 'object' && 'description' in bullet)
-                          ? (bullet as any).description
-                          : String(bullet);
+                        : bulletObj && (bulletObj.description || bulletObj.title || bulletObj.text)
+                          ? (bulletObj.description || bulletObj.title || bulletObj.text)
+                          : JSON.stringify(bullet);
                       return (
                         <li key={bulletIndex} style={listItemStyle}>
                           <span>{bulletText}</span>
@@ -584,11 +586,19 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
             {hasAchievements && (
               <div style={{ marginBottom: mmToPx(PDF_CONFIG.spacing.entrySpacing) }}>
                 <ul style={{ marginLeft: mmToPx(PDF_CONFIG.spacing.bulletIndent), listStyleType: 'disc' }}>
-                  {resumeData.achievements!.map((item, index) => (
-                    <li key={index} style={listItemStyle}>
-                      <span>{item}</span>
-                    </li>
-                  ))}
+                  {resumeData.achievements!.map((item, index) => {
+                    const itemObj = (item && typeof item === 'object') ? (item as any) : null;
+                    const text = typeof item === 'string'
+                      ? item
+                      : itemObj && (itemObj.title || itemObj.text || itemObj.description)
+                        ? (itemObj.title || itemObj.text || itemObj.description)
+                        : JSON.stringify(item);
+                    return (
+                      <li key={index} style={listItemStyle}>
+                        <span>{text}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
