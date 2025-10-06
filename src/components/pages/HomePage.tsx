@@ -414,29 +414,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             );
           })()}
 
-          {/* Explore Jobs CTA under marquee */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.45 }}
-            className="mt-8"
-          >
-            <div className="max-w-4xl mx-auto rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100 flex flex-col sm:flex-row items-center justify-between gap-4 dark:from-dark-200 dark:to-dark-100 dark:border-dark-300">
-              <div className="text-center sm:text-left">
-                <h5 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Explore Job Openings</h5>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Find roles at top companies and apply with your optimized resume.</p>
-              </div>
-              <button
-                onClick={() => navigate('/jobs')}
-                className="inline-flex items-center px-5 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-600 shadow hover:shadow-lg hover:from-blue-700 hover:to-cyan-700 transition-all"
-              >
-                <Briefcase className="w-4 h-4 mr-2" />
-                Explore Jobs
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
-            </div>
-          </motion.div>
+          {/* Explore Jobs CTA removed as requested */}
         </div>
       </section>
 
