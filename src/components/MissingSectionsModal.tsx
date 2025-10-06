@@ -376,7 +376,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Job Title *
               </label>
               <input
@@ -389,7 +389,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Company *
               </label>
               <input
@@ -403,7 +403,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Duration *
             </label>
             <input
@@ -411,12 +411,12 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
               value={work.year}
               onChange={(e) => updateWorkExperience(workIndex, 'year', e.target.value)}
               placeholder="e.g., Jan 2023 - Present"
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+              className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Key Responsibilities
             </label>
             {work.bullets.map((bullet, bulletIndex) => (
@@ -484,7 +484,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Project Title *
             </label>
             <input
@@ -497,7 +497,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Project Details
             </label>
             {project.bullets.map((bullet, bulletIndex) => (
@@ -668,7 +668,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Degree *</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Degree *</label>
               <input
                 type="text"
                 value={edu.degree}
@@ -679,7 +679,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Institution *</label>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Institution *</label>
               <input
                 type="text"
                 value={edu.school}
@@ -691,35 +691,35 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Year *</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Year *</label>
             <input
               type="text"
               value={edu.year}
               onChange={(e) => updateEducation(eduIndex, 'year', e.target.value)}
               placeholder="e.g., 2020-2024"
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+              className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">CGPA/GPA</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">CGPA/GPA</label>
             <input
               type="text"
               value={edu.cgpa || ''}
               onChange={(e) => updateEducation(eduIndex, 'cgpa', e.target.value)}
               placeholder="e.g., 8.5/10 or 3.8/4.0"
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+              className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Location</label>
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
             <input
               type="text"
               value={edu.location || ''}
               onChange={(e) => updateEducation(eduIndex, 'location', e.target.value)}
               placeholder="e.g., City, State"
-              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm min-h-[44px]"
+              className="w-full px-3 py-3 border border-gray-300 dark:border-dark-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-neon-cyan-500 focus:border-blue-500 dark:bg-dark-200 dark:text-gray-100 dark:placeholder-gray-400 text-sm min-h-[44px]"
             />
           </div>
         </div>
@@ -786,7 +786,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
       </div>
 
       <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Email Address *
         </label>
         <input
@@ -799,7 +799,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
       </div>
 
       <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Phone Number
         </label>
         <input
@@ -812,7 +812,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
       </div>
 
       <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           LinkedIn Profile URL
         </label>
         <input
@@ -825,7 +825,7 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
       </div>
 
       <div>
-        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           GitHub Profile URL
         </label>
         <input
@@ -986,4 +986,3 @@ export const MissingSectionsModal: React.FC<MissingSectionsModalProps> = ({
     </div>
   );
 };
-
