@@ -379,6 +379,66 @@ export const UserProfileManagement: React.FC<UserProfileManagementProps> = ({
       const resumeData: ResumeData = await mockPaymentService.parseResumeWithAI(result.text);
       console.log('Parsed Resume Data from mockPaymentService:', resumeData); // Diagnostic Log 1
 
+      // Helper: normalize arrays to strings and dedupe
+      const toStringArray = (arr?: any[]): string[] => {
+        if (!Array.isArray(arr)) return [];
+        const out: string[] = arr
+          .map((v) => {
+            if (typeof v === 'string') return v.trim();
+            if (v && typeof v === 'object') {
+              const text = (v.description || v.title || v.text || '').toString();
+              return text.trim();
+            }
+            return String(v || '').trim();
+          })
+          .filter(Boolean);
+        // Dedupe while preserving order
+        const seen = new Set<string>();
+        return out.filter((s) => (seen.has(s) ? false : (seen.add(s), true)));
+      };
+
+      const normEducation = Array.isArray(resumeData.education)
+        ? resumeData.education.map((e: any) => ({
+            degree: (e?.degree || '').toString(),
+            school: (e?.school || '').toString(),
+            year: (e?.year || '').toString(),
+            cgpa: e?.cgpa ? e.cgpa.toString() : '',
+            location: e?.location ? e.location.toString() : '',
+          }))
+        : [];
+
+      const normExperience = Array.isArray(resumeData.workExperience)
+        ? resumeData.workExperience.map((w: any) => ({
+            role: (w?.role || '').toString(),
+            company: (w?.company || '').toString(),
+            year: (w?.year || '').toString(),
+            bullets: toStringArray(w?.bullets).length ? toStringArray(w?.bullets) : [''],
+          }))
+        : [];
+
+      const normProjects = Array.isArray(resumeData.projects)
+        ? resumeData.projects.map((p: any) => ({
+            title: (p?.title || '').toString(),
+            bullets: toStringArray(p?.bullets).length ? toStringArray(p?.bullets) : [''],
+          }))
+        : [];
+
+      const normSkills = Array.isArray(resumeData.skills)
+        ? resumeData.skills.map((s: any) => ({
+            category: (s?.category || '').toString(),
+            list: toStringArray(s?.list),
+          }))
+        : [];
+
+      const normCertsArray: any[] = Array.isArray(resumeData.certifications)
+        ? (resumeData.certifications as any[])
+        : [];
+      const normCerts = normCertsArray.map((cert: any) =>
+        typeof cert === 'string'
+          ? { title: cert, description: '' }
+          : { title: (cert?.title || '').toString(), description: cert?.description ? cert.description.toString() : '' }
+      );
+
       // Prepare data for reset
       const newFormData: ProfileFormData = {
         full_name: resumeData.name || '',
@@ -388,20 +448,17 @@ export const UserProfileManagement: React.FC<UserProfileManagementProps> = ({
         github_profile: resumeData.github || '',
         resume_headline: resumeData.summary || resumeData.careerObjective || '',
         current_location: resumeData.location || '',
-        education_details: resumeData.education || [],
-        experience_details: resumeData.workExperience || [],
-        projects_details: resumeData.projects || [],
-        skills_details: resumeData.skills || [],
-        // Ensure certifications are mapped to the expected object format before setting
-        certifications_details: resumeData.certifications.map(cert =>
-          typeof cert === 'string' ? { title: cert, description: '' } : cert
-        ) || [],
+        education_details: normEducation,
+        experience_details: normExperience,
+        projects_details: normProjects,
+        skills_details: normSkills,
+        certifications_details: normCerts,
       };
 
       console.log('New form data prepared for reset:', newFormData); // Diagnostic Log 2
 
       // Reset the entire form with the new data, ensuring old values are replaced
-      reset(newFormData, { keepDefaultValues: false });
+      reset(newFormData, { keepDefaultValues: false, keepValues: false, keepDirty: false });
       console.log('Form data AFTER reset:', getValues()); // Diagnostic Log after reset
 
       setAlertContent({ title: 'Resume Parsed!', message: 'Your resume data has been pre-filled into the form.', type: 'success' });
