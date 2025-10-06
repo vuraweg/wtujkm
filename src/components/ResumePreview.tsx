@@ -221,6 +221,8 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     fontFamily: `${PDF_CONFIG.fontFamily}, "Segoe UI", Tahoma, Geneva, Verdana, sans-serif`,
     letterSpacing: '0.5pt',
     textTransform: 'uppercase',
+    // Force resume section titles to remain black even in dark mode context
+    color: '#000000',
   } as const;
 
   const sectionUnderlineStyle: React.CSSProperties = {
@@ -740,4 +742,3 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({
     </div>
   );
 };
-
