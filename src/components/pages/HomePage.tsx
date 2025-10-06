@@ -362,17 +362,6 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* Decorative background orbs */}
         <div aria-hidden className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-gradient-to-br from-cyan-300/40 to-blue-300/30 blur-3xl" />
         <div aria-hidden className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-gradient-to-br from-purple-300/40 to-indigo-300/30 blur-3xl" />
-        {/* Subtle dotted pattern overlay */}
-        <div aria-hidden className="absolute inset-0 opacity-40 dark:opacity-20">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-            <defs>
-              <pattern id="dotsPattern" width="24" height="24" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1.5" fill="currentColor" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#dotsPattern)" className="text-blue-200 dark:text-dark-300" />
-          </svg>
-        </div>
         {/* Local styles for marquee animation */}
         <style>{`
           @keyframes marqueeX { from { transform: translateX(0); } to { transform: translateX(-50%); } }
