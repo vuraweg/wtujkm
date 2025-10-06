@@ -303,7 +303,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           </h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {features.map((feature) => {
+          {features.map((feature, index) => {
             let remainingCount: number | null = null;
             if (isAuthenticated && userSubscription) {
               switch (feature.id) {
@@ -325,10 +325,16 @@ export const HomePage: React.FC<HomePageProps> = ({
             }
 
             return (
-              <button
+              <motion.button
                 key={feature.id}
                 onClick={() => handleFeatureClick(feature)} // Pass the full feature object
                 className={`relative card-hover p-6 flex flex-col items-start sm:flex-row sm:items-center justify-between transition-all duration-300 bg-gradient-to-br ${feature.gradient} border border-secondary-100 shadow-lg hover:shadow-xl group rounded-2xl dark:from-dark-100 dark:to-dark-200 dark:border-dark-300 dark:hover:shadow-neon-cyan/20 ${feature.requiresAuth && !isAuthenticated ? 'opacity-70 cursor-not-allowed' : ''} ${feature.highlight ? 'ring-2 ring-green-500 ring-offset-4 overflow-visible' : ''}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.45, delay: index * 0.05 }}
+                whileHover={{ y: -4, scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
                 {feature.highlight && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -354,11 +360,61 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </div>
                 </div>
                 <ArrowRight className={`w-6 h-6 text-secondary-400 group-hover:text-neon-cyan-400 group-hover:translate-x-1 transition-transform duration-300 flex-shrink-0 dark:text-gray-500 dark:group-hover:text-neon-cyan-400 ${feature.requiresAuth && !isAuthenticated ? 'opacity-50' : ''}`} />
-              </button>
+              </motion.button>
             );
           })}
         </div>
       </div>
+
+      {/* Companies Marquee Section */}
+      <section className="relative py-10 sm:py-12 bg-white/70 dark:bg-dark-100/60 border-y border-gray-200 dark:border-dark-300">
+        {/* Local styles for marquee animation */}
+        <style>{`
+          @keyframes marqueeX { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+          .marquee-track { animation: marqueeX 28s linear infinite; }
+          .marquee-track.fast { animation-duration: 22s; }
+          .marquee:hover .marquee-track { animation-play-state: paused; }
+        `}</style>
+        <div className="container-responsive">
+          <div className="text-center mb-6">
+            <h4 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100">Top Companies Our Users Apply To</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Trusted by candidates interviewing at leading global brands</p>
+          </div>
+
+          {(() => {
+            const companies = [
+              'Google','Microsoft','Amazon','Meta','Netflix','Apple','NVIDIA','OpenAI','Uber','Airbnb',
+              'Stripe','Coinbase','Salesforce','Adobe','Oracle','IBM','Intel','Samsung','Dell','HP',
+              'Accenture','Infosys','TCS','Wipro','Capgemini','Zoho','Flipkart','Paytm','Swiggy','Zomato'
+            ];
+            const chip = (name: string, i: number) => (
+              <span
+                key={name + i}
+                className="mx-2 my-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 text-gray-700 shadow-sm border border-gray-200 backdrop-blur dark:bg-dark-200/70 dark:text-gray-200 dark:border-dark-300"
+              >
+                <Briefcase className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm font-medium">{name}</span>
+              </span>
+            );
+            return (
+              <div className="space-y-4">
+                {/* Row 1 */}
+                <div className="marquee overflow-hidden">
+                  <div className="marquee-track whitespace-nowrap flex items-center">
+                    {[...companies, ...companies].map((c, i) => chip(c, i))}
+                  </div>
+                </div>
+                {/* Row 2 (faster) */}
+                <div className="marquee overflow-hidden">
+                  <div className="marquee-track fast whitespace-nowrap flex items-center">
+                    {[...companies.slice(10), ...companies.slice(10)].map((c, i) => chip(c, i))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </section>
 
       {/* Minimalist Plans Section */}
       {isAuthenticated && (
