@@ -190,16 +190,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       requiresAuth: true,
       gradient: 'from-yellow-50 to-amber-50', // Added gradient
     }
-    ,
-    {
-      id: '/jobs',
-      title: 'Explore Jobs',
-      description: 'Discover job opportunities and apply with AI-optimized resumes.',
-      icon: <Briefcase className="w-6 h-6" />,
-      requiresAuth: false,
-      highlight: false,
-      gradient: 'from-indigo-50 to-purple-50',
-    }
+    
   ];
 
   const stats = [
