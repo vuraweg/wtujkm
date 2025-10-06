@@ -2839,7 +2839,7 @@ const handleGenerateProjectBullets = async (
                     resumeData={optimizedResume}
                     userType={userType}
                     showControls={true}
-                    defaultZoom={0.65}
+                    defaultZoom={1.65}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-center px-6 py-12 text-gray-500 dark:text-gray-400">
