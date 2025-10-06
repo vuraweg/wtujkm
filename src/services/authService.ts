@@ -334,24 +334,27 @@ class AuthService {
     console.log('AuthService: Starting updateUserProfile for user ID:', userId, 'updates:', updates);
     try {
       const dbUpdates: { [key: string]: any } = {
-        full_name: updates.full_name,
-        email_address: updates.email_address,
-        phone: updates.phone,
-        linkedin_profile: updates.linkedin_profile,
-        has_seen_profile_prompt: updates.has_seen_profile_prompt,
-        resume_headline: updates.resume_headline,
-        current_location: updates.current_location,
-        education_details: updates.education_details,
-        experience_details: updates.experience_details,
-        skills_details: updates.skills_details,
-        projects_details: updates.projects_details,
-        certifications_details: updates.certifications_details,
-        profile_updated_at: new Date().toISOString()
-      };
+  full_name: updates.full_name,
+  email_address: updates.email_address,
+  phone: updates.phone,
+  linkedin_profile: updates.linkedin_profile,
+  wellfound_profile: updates.github_profile,
+  has_seen_profile_prompt: updates.has_seen_profile_prompt,
+  resume_headline: updates.resume_headline,
+  current_location: updates.current_location,
+  education_details: updates.education_details,
+  experience_details: updates.experience_details,
+  skills_details: updates.skills_details,
+  profile_updated_at: new Date().toISOString(),
+};
 
-      if (updates.github_profile !== undefined) {
-        dbUpdates.wellfound_profile = updates.github_profile;
-      }
+Object.keys(dbUpdates).forEach((key) => {
+  if (dbUpdates[key] === undefined) {
+    delete dbUpdates[key];
+  }
+});
+
+
 
       const { error } = await supabase
         .from('user_profiles')

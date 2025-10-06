@@ -548,24 +548,20 @@ export const UserProfileManagement: React.FC<UserProfileManagementProps> = ({
     console.log('Submitting profile data:', data); // Debug log
 
     try {
-      await supabase
-  .from('profiles')
-  .update({
-    full_name: data.full_name,
-    email_address: data.email_address,
-    phone: data.phone,
-    linkedin_profile: data.linkedin_profile,
-    github_profile: data.github_profile,
-    resume_headline: data.resume_headline,
-    current_location: data.current_location,
-    education_details: data.education_details,
-    experience_details: data.experience_details,
-    projects_details: data.projects_details,
-    skills_details: data.skills_details,
-    certifications_details: data.certifications_details,
-  })
-  .eq('id', user.id);
-
+      await authService.updateUserProfile(user.id, {
+        full_name: data.full_name,
+        email_address: data.email_address,
+        phone: data.phone,
+        linkedin_profile: data.linkedin_profile,
+        github_profile: data.github_profile,
+        resume_headline: data.resume_headline,
+        current_location: data.current_location,
+        education_details: data.education_details,
+        experience_details: data.experience_details,
+        projects_details: data.projects_details,
+        skills_details: data.skills_details,
+        certifications_details: data.certifications_details,
+      });
       await revalidateUserSession(); // Refresh user context
       await markProfilePromptSeen(); // Mark prompt as seen after saving profile
       setSubmitSuccess(true);
@@ -1065,7 +1061,7 @@ export const UserProfileManagement: React.FC<UserProfileManagementProps> = ({
 
               {/* Save Button */}
               <div className="flex justify-end pt-6 border-t border-gray-200 dark:border-dark-300">
-                <button type="submit" disabled={isSubmitting || !isDirty} className="btn-primary flex items-center space-x-2">
+                <button disabled={isSubmitting} className="btn-primary flex items-center space-x-2">
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                   <span>{isSubmitting ? 'Saving...' : 'Save Profile'}</span>
                 </button>
