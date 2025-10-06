@@ -38,12 +38,26 @@ import { JobListing } from '../../types/jobs';
 import { ImageUpload } from './ImageUpload';
 import { useJobFormAutoSave } from '../../hooks/useJobFormAutoSave';
 
+// Helper to truly make optional number inputs tolerant of empty string/NaN from form
+const optionalPositiveNumber = (message: string) =>
+  z.preprocess(
+    (val) => {
+      if (val === '' || val === null || typeof val === 'undefined') return undefined;
+      // react-hook-form with valueAsNumber can pass NaN when input is empty
+      if (typeof val === 'number' && Number.isNaN(val)) return undefined;
+      // strings that are numeric
+      if (typeof val === 'string' && val.trim() === '') return undefined;
+      return val;
+    },
+    z.number().positive(message).optional()
+  );
+
 // Zod schema for job listing validation
 const jobListingSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
   company_logo_url: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   role_title: z.string().min(1, 'Role title is required'),
-  package_amount: z.number().positive('Package amount must be positive').optional(),
+  package_amount: optionalPositiveNumber('Package amount must be positive'),
   package_type: z.enum(['CTC', 'stipend', 'hourly']).optional(),
   domain: z.string().min(1, 'Domain is required'),
   location_type: z.enum(['Remote', 'Onsite', 'Hybrid']),
@@ -60,7 +74,7 @@ const jobListingSchema = z.object({
   referral_email: z.string().email('Must be a valid email').optional().or(z.literal('')),
   referral_code: z.string().optional(),
   referral_link: z.string().url('Must be a valid URL').optional().or(z.literal('')),
-  referral_bonus_amount: z.number().positive('Bonus amount must be positive').optional(),
+  referral_bonus_amount: optionalPositiveNumber('Bonus amount must be positive'),
   referral_terms: z.string().optional(),
 
   // Test pattern fields
@@ -69,7 +83,7 @@ const jobListingSchema = z.object({
   has_aptitude_test: z.boolean().default(false),
   has_technical_interview: z.boolean().default(false),
   has_hr_interview: z.boolean().default(false),
-  test_duration_minutes: z.number().positive('Duration must be positive').optional(),
+  test_duration_minutes: optionalPositiveNumber('Duration must be positive'),
 });
 
 type JobFormData = z.infer<typeof jobListingSchema>;
