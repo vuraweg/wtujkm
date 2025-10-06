@@ -56,6 +56,20 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { useAuth } from '../../contexts/AuthContext'; // ADDED: Import useAuth
 import { authService } from '../../services/authService'; // ADDED: Import authService
 
+// Inline WhatsApp brand icon (lucide-react has no brand icons)
+const WhatsappIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 32 32"
+    fill="currentColor"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M19.11 17.37c-.26-.13-1.52-.75-1.75-.84-.23-.09-.4-.13-.57.13s-.66.84-.81 1.01c-.15.17-.3.19-.56.06-.26-.13-1.08-.4-2.06-1.27-.76-.67-1.27-1.49-1.42-1.75-.15-.26-.02-.4.11-.53.12-.12.26-.3.39-.45.13-.15.17-.26.26-.43.09-.17.04-.32-.02-.45-.06-.13-.57-1.37-.78-1.88-.2-.48-.4-.41-.57-.42l-.49-.01c-.17 0-.45.06-.69.32-.23.26-.91.89-.91 2.17s.94 2.52 1.07 2.7c.13.17 1.85 2.83 4.49 3.97.63.27 1.12.43 1.5.55.63.2 1.21.17 1.66.1.51-.08 1.52-.62 1.73-1.21.21-.59.21-1.09.15-1.21-.06-.12-.24-.19-.5-.32z" />
+    <path d="M26.72 5.28A13.5 13.5 0 0 0 4.47 21.06L3 29l8.11-1.42A13.49 13.49 0 1 0 26.72 5.28zM16.5 27A10.47 10.47 0 0 1 8.3 24.3l-.29-.18-4.91.85.84-4.8-.19-.31A10.5 10.5 0 1 1 16.5 27z" />
+  </svg>
+);
+
 export const HomePage: React.FC<HomePageProps> = ({
   // REMOVED: onPageChange,
   isAuthenticated,
@@ -534,18 +548,38 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* CTA Section */}
 
       {/* Footer */}
-      <footer className="mt-16 border-t border-gray-200 bg-white/80 backdrop-blur-sm dark:bg-dark-100/80 dark:border-dark-300">
+      <footer className="mt-16 bg-white/70 dark:bg-dark-100/80 backdrop-blur border-t border-gray-200 dark:border-dark-300">
+        {/* gradient accent line */}
+        <div className="h-0.5 bg-gradient-to-r from-pink-500 via-cyan-400 to-blue-600 dark:from-neon-pink-500 dark:via-neon-cyan-400 dark:to-neon-blue-500" />
         <div className="container-responsive py-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+            {/* Brand */}
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl overflow-hidden shadow ring-1 ring-black/5">
+                <img
+                  src="https://res.cloudinary.com/dlkovvlud/image/upload/w_200,c_fill,ar_1:1,g_auto,r_max,b_rgb:262c35/v1751536902/a-modern-logo-design-featuring-primoboos_XhhkS8E_Q5iOwxbAXB4CqQ_HnpCsJn4S1yrhb826jmMDw_nmycqj.jpg"
+                  alt="PrimoBoost AI"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">PrimoBoost AI</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Resume Intelligence</p>
+              </div>
+            </div>
+
+            {/* Copyright */}
+            <div className="text-sm text-gray-600 dark:text-gray-400 text-center md:text-left">
               © {new Date().getFullYear()} PrimoBoost AI. All rights reserved.
             </div>
+
+            {/* Socials */}
             <div className="flex items-center gap-3">
               <a
                 href="https://instagram.com/primoboostai"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-pink-600 hover:bg-pink-50 transition-colors dark:border-dark-300 dark:text-pink-400 dark:hover:bg-dark-200"
+                className="group inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-pink-600 bg-white/70 hover:bg-pink-50 hover:ring-2 hover:ring-pink-300 transition-all dark:border-dark-300 dark:text-pink-400 dark:bg-dark-200/60 dark:hover:bg-dark-200"
                 aria-label="Instagram"
                 title="Instagram"
               >
@@ -555,7 +589,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 href="https://linkedin.com/company/primoboost-ai"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-blue-700 hover:bg-blue-50 transition-colors dark:border-dark-300 dark:text-neon-cyan-400 dark:hover:bg-dark-200"
+                className="group inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-blue-700 bg-white/70 hover:bg-blue-50 hover:ring-2 hover:ring-blue-300 transition-all dark:border-dark-300 dark:text-neon-cyan-400 dark:bg-dark-200/60 dark:hover:bg-dark-200"
                 aria-label="LinkedIn"
                 title="LinkedIn"
               >
@@ -565,11 +599,11 @@ export const HomePage: React.FC<HomePageProps> = ({
                 href="https://wa.me/0000000000"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-green-600 hover:bg-green-50 transition-colors dark:border-dark-300 dark:text-green-400 dark:hover:bg-dark-200"
+                className="group inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-green-600 bg-white/70 hover:bg-green-50 hover:ring-2 hover:ring-green-300 transition-all dark:border-dark-300 dark:text-green-400 dark:bg-dark-200/60 dark:hover:bg-dark-200"
                 aria-label="WhatsApp"
                 title="WhatsApp"
               >
-                <MessageCircle className="w-5 h-5" />
+                <WhatsappIcon className="w-5 h-5" />
               </a>
             </div>
           </div>
