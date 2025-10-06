@@ -866,6 +866,7 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
                         resumeData={optimizedResume}
                         userType={userType}
                         onExport={handleExportFile}
+                        showInlinePreview={false}
                       />
                     </div>
                   </div>
