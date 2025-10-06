@@ -557,11 +557,6 @@ export const HomePage: React.FC<HomePageProps> = ({
               className="text-center rounded-2xl p-6 backdrop-blur-sm bg-white/5 border border-white/10 shadow-xl"
             >
               <div className="relative mx-auto mb-5">
-                <motion.div
-                  className="absolute inset-0 rounded-full border-2 border-cyan-400/30"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-                />
                 <div className="relative w-20 h-20 rounded-full mx-auto flex items-center justify-center bg-cyan-500/15">
                   <Zap className="w-8 h-8 text-yellow-300" />
                 </div>
@@ -580,11 +575,6 @@ export const HomePage: React.FC<HomePageProps> = ({
               className="text-center rounded-2xl p-6 backdrop-blur-sm bg-white/5 border border-white/10 shadow-xl"
             >
               <div className="relative mx-auto mb-5">
-                <motion.div
-                  className="absolute inset-0 rounded-full border-2 border-indigo-400/30"
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-                />
                 <div className="relative w-20 h-20 rounded-full mx-auto flex items-center justify-center bg-indigo-500/15">
                   <Award className="w-8 h-8 text-green-300" />
                 </div>
@@ -603,11 +593,6 @@ export const HomePage: React.FC<HomePageProps> = ({
               className="text-center rounded-2xl p-6 backdrop-blur-sm bg-white/5 border border-white/10 shadow-xl"
             >
               <div className="relative mx-auto mb-5">
-                <motion.div
-                  className="absolute inset-0 rounded-full border-2 border-fuchsia-400/30"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-                />
                 <div className="relative w-20 h-20 rounded-full mx-auto flex items-center justify-center bg-fuchsia-500/15">
                   <Users className="w-8 h-8 text-fuchsia-300" />
                 </div>
