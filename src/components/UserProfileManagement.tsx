@@ -59,36 +59,249 @@ const mockPaymentService = {
     return Promise.resolve({ success: true, transactionId: 'mock_tx_123' });
   },
   parseResumeWithAI: async (resumeText: string): Promise<ResumeData> => {
-    console.log('Parsing resume with AI (mocked)...');
-    // Simulate AI parsing
-    // This mock returns static data. In a real scenario, this would be dynamic based on resumeText.
-    return {
-      name: 'John Doe',
-      phone: '+1234567890',
-      email: 'john.doe@example.com',
-      linkedin: 'https://linkedin.com/in/johndoe',
-      github: 'https://github.com/johndoe',
-      location: 'San Francisco, CA',
-      targetRole: 'Software Engineer',
-      summary: 'Highly motivated software engineer with 5 years of experience in web development.',
-      education: [
-        { degree: 'M.Sc. Computer Science', school: 'University of Example', year: '2020', cgpa: '3.9', location: 'Example City' },
-        { degree: 'B.Sc. Computer Science', school: 'Another University', year: '2018', cgpa: '3.7', location: 'Another City' },
-      ],
-      workExperience: [
-        { role: 'Senior Software Engineer', company: 'Tech Solutions Inc.', year: '2022 - Present', bullets: ['Developed scalable microservices', 'Led a team of 5 engineers'] },
-        { role: 'Software Engineer', company: 'Innovate Corp.', year: '2020 - 2022', bullets: ['Built responsive web applications', 'Optimized database queries'] },
-      ],
-      projects: [
-        { title: 'E-commerce Platform', bullets: ['Developed a full-stack e-commerce platform', 'Integrated payment gateways'] },
-      ],
-      skills: [
-        { category: 'Languages', count: 3, list: ['JavaScript', 'Python', 'Java'] },
-        { category: 'Frameworks', count: 2, list: ['React', 'Node.js'] },
-      ],
-      certifications: [{ title: 'AWS Certified Developer', description: 'Certified in AWS development practices.' }],
-      achievements: ['Awarded Employee of the Year', 'Published 2 research papers'],
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    if (!apiKey) {
+      throw new Error('OpenRouter API key is not configured. Please contact support.');
+    }
+
+    const text = (resumeText || '').trim();
+    if (!text) {
+      throw new Error('Parsed resume was empty. Please upload a readable resume file.');
+    }
+
+    const MAX_INPUT_LENGTH = 50000;
+    let payload = text;
+    let wasTrimmed = false;
+
+    if (payload.length > MAX_INPUT_LENGTH) {
+      payload = payload.slice(0, MAX_INPUT_LENGTH);
+      wasTrimmed = true;
+    }
+
+    const promptLines = [
+      'You are an expert ATS resume parsing assistant. Convert the resume text below into JSON that strictly matches this schema:',
+      '',
+      '{',
+      '  "name": "",',
+      '  "phone": "",',
+      '  "email": "",',
+      '  "linkedin": "",',
+      '  "github": "",',
+      '  "location": "",',
+      '  "targetRole": "",',
+      '  "summary": "",',
+      '  "careerObjective": "",',
+      '  "education": [',
+      '    { "degree": "", "school": "", "year": "", "cgpa": "", "location": "" }',
+      '  ],',
+      '  "workExperience": [',
+      '    { "role": "", "company": "", "year": "", "bullets": [] }',
+      '  ],',
+      '  "projects": [',
+      '    { "title": "", "bullets": [] }',
+      '  ],',
+      '  "skills": [',
+      '    { "category": "", "list": [] }',
+      '  ],',
+      '  "certifications": [',
+      '    { "title": "", "description": "" }',
+      '  ],',
+      '  "additionalSections": [',
+      '    { "title": "", "bullets": [] }',
+      '  ],',
+      '  "achievements": []',
+      '}',
+      '',
+      'Rules:',
+      '1. Use only information that explicitly appears in the resume.',
+      '2. Keep field names exactly as defined above.',
+      '3. If information is missing for a field, use an empty string or empty array as appropriate.',
+      '4. Split multi-line or numbered lists into clean bullet arrays of strings.',
+      '5. Preserve original phrasing for achievements and bullet points.',
+      '6. Do not invent data, add commentary, or wrap the JSON in code fences.',
+      '',
+      'Resume Text:',
+      '"""' + payload + '"""'
+    ];
+    const prompt = promptLines.join('\n');
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + apiKey,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://primoboost.ai',
+        'X-Title': 'PrimoBoost AI',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.1,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error('Resume parsing failed (' + response.status + '): ' + errorText);
+    }
+
+    const data = await response.json();
+    let rawContent = data?.choices?.[0]?.message?.content;
+
+    if (Array.isArray(rawContent)) {
+      rawContent = rawContent
+        .map((part: any) => {
+          if (!part) return '';
+          if (typeof part === 'string') return part;
+          if (typeof part === 'object' && typeof part.text === 'string') return part.text;
+          return '';
+        })
+        .join('\n');
+    } else if (rawContent && typeof rawContent === 'object' && typeof rawContent.text === 'string') {
+      rawContent = rawContent.text;
+    }
+
+    if (typeof rawContent !== 'string' || !rawContent.trim()) {
+      throw new Error('Resume parsing service returned an empty response.');
+    }
+
+    const jsonMatch = rawContent.match(/```json\s*([\s\S]*?)```/i);
+    const cleaned = jsonMatch && jsonMatch[1]
+      ? jsonMatch[1].trim()
+      : rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(cleaned || '{}');
+    } catch (error) {
+      console.error('Failed to parse JSON from resume parser:', error);
+      console.error('Resume parser raw output:', cleaned);
+      throw new Error('Resume parsing service returned invalid data. Please try again.');
+    }
+
+    const asString = (value: any): string => {
+      if (typeof value === 'string') return value.trim();
+      if (typeof value === 'number') return String(value).trim();
+      return '';
     };
+
+    const ensureStringArray = (value: any): string[] => {
+      if (Array.isArray(value)) {
+        return value.map(asString).filter(Boolean);
+      }
+      return [];
+    };
+
+    const normalizeEducation = (value: any): ResumeData['education'] => {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map((item: any) => ({
+          degree: asString(item?.degree),
+          school: asString(item?.school),
+          year: asString(item?.year),
+          cgpa: asString(item?.cgpa),
+          location: asString(item?.location),
+        }))
+        .filter(entry => entry.degree || entry.school || entry.year || entry.cgpa || entry.location);
+    };
+
+    const normalizeExperience = (value: any): ResumeData['workExperience'] => {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map((item: any) => ({
+          role: asString(item?.role),
+          company: asString(item?.company),
+          year: asString(item?.year),
+          bullets: ensureStringArray(item?.bullets),
+        }))
+        .filter(entry => entry.role || entry.company || entry.year || entry.bullets.length);
+    };
+
+    const normalizeProjects = (value: any): ResumeData['projects'] => {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map((item: any) => ({
+          title: asString(item?.title),
+          bullets: ensureStringArray(item?.bullets),
+        }))
+        .filter(entry => entry.title || entry.bullets.length);
+    };
+
+    const normalizeSkills = (value: any): ResumeData['skills'] => {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map((item: any) => {
+          const list = ensureStringArray(item?.list);
+          const category = asString(item?.category) || (list.length ? 'Skills' : '');
+          if (!category && !list.length) {
+            return null;
+          }
+          return { category, count: list.length, list };
+        })
+        .filter((entry): entry is ResumeData['skills'][number] => !!entry);
+    };
+
+    const normalizeCertifications = (value: any): ResumeData['certifications'] => {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map((item: any) => {
+          if (typeof item === 'string') {
+            const title = asString(item);
+            return title ? { title, description: '' } : null;
+          }
+          const title = asString(item?.title);
+          const description = asString(item?.description);
+          if (!title && !description) {
+            return null;
+          }
+          return { title, description };
+        })
+        .filter((entry): entry is { title: string; description: string } => !!entry);
+    };
+
+    const normalizeAdditionalSections = (value: any): { title: string; bullets: string[] }[] => {
+      if (!Array.isArray(value)) return [];
+      return value
+        .map((item: any) => {
+          const title = asString(item?.title);
+          const bullets = ensureStringArray(item?.bullets);
+          if (!title && !bullets.length) {
+            return null;
+          }
+          return { title, bullets };
+        })
+        .filter((entry): entry is { title: string; bullets: string[] } => !!entry);
+    };
+
+    const resumeData: ResumeData = {
+      name: asString(parsed?.name),
+      phone: asString(parsed?.phone),
+      email: asString(parsed?.email),
+      linkedin: asString(parsed?.linkedin),
+      github: asString(parsed?.github),
+      location: asString(parsed?.location) || undefined,
+      targetRole: asString(parsed?.targetRole) || undefined,
+      summary: asString(parsed?.summary) || undefined,
+      careerObjective: asString(parsed?.careerObjective) || undefined,
+      education: normalizeEducation(parsed?.education),
+      workExperience: normalizeExperience(parsed?.workExperience),
+      projects: normalizeProjects(parsed?.projects),
+      skills: normalizeSkills(parsed?.skills),
+      certifications: normalizeCertifications(parsed?.certifications),
+      origin: wasTrimmed ? 'parsed_resume_trimmed' : 'parsed_resume',
+    };
+
+    const additionalSections = normalizeAdditionalSections(parsed?.additionalSections);
+    if (additionalSections.length) {
+      resumeData.additionalSections = additionalSections;
+    }
+
+    const achievements = ensureStringArray(parsed?.achievements ?? parsed?.awards ?? parsed?.accomplishments);
+    if (achievements.length) {
+      resumeData.achievements = achievements;
+    }
+
+    return resumeData;
   },
 };
 
