@@ -1,5 +1,6 @@
 // src/components/pages/HomePage.tsx
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
   FileText,
   PlusCircle,
@@ -425,45 +426,107 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       )}
 
-      {/* Additional Features Teaser */}
-    <div className="bg-gradient-to-r from-gray-900 via-purple-900 to-blue-900 text-white py-16 px-4 sm:px-0 dark:from-dark-50 dark:via-dark-100 dark:to-dark-200" >
+      {/* Additional Features Teaser - animated and responsive */}
+      <div className="relative overflow-hidden text-white py-16 sm:py-20 px-4 sm:px-0 bg-gradient-to-br from-[#0f172a] via-[#25164a] to-[#0b2c60] dark:from-dark-50 dark:via-dark-100 dark:to-dark-200">
+        {/* subtle animated gradient orbs */}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-fuchsia-500/20 blur-3xl"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.35, 0.55, 0.35] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 9, repeat: Infinity }}
+        />
 
-        
-
-        <div className="container-responsive text-left">
-          <div className="max-w-3xl mx-auto">
-            <h3 className="text-2xl sm:text-3xl font-bold mb-4 text-pink-500 dark:text-neon-pink-400">
+        <div className="container-responsive">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-3xl mx-auto text-center"
+          >
+            <h3 className="text-2xl sm:text-3xl font-extrabold mb-3 bg-gradient-to-r from-pink-400 via-fuchsia-400 to-purple-400 bg-clip-text text-transparent">
               Powered by Advanced AI Technology
             </h3>
-            <p className="text-lg text-blue-100 dark:text-gray-300 mb-8">
+            <p className="text-base sm:text-lg text-blue-100/90 dark:text-gray-300">
               Our intelligent system understands ATS requirements, job market trends, and recruiter preferences to give you the competitive edge.
             </p>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-12">
-              <div className="text-center">
-                <div className="bg-blue-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 dark:bg-neon-cyan-500/20 dark:shadow-neon-cyan">
-                  <Zap className="w-8 h-8 text-yellow-400 dark:text-neon-cyan-400" />
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mt-10 sm:mt-12">
+            {/* Card 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.05 }}
+              whileHover={{ y: -6, scale: 1.02 }}
+              className="text-center rounded-2xl p-6 backdrop-blur-sm bg-white/5 border border-white/10 shadow-xl"
+            >
+              <div className="relative mx-auto mb-5">
+                <motion.div
+                  className="absolute inset-0 rounded-full border-2 border-cyan-400/30"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+                />
+                <div className="relative w-20 h-20 rounded-full mx-auto flex items-center justify-center bg-cyan-500/15">
+                  <Zap className="w-8 h-8 text-yellow-300" />
                 </div>
-                <h4 className="font-semibold mb-3 text-lg text-yellow-300 dark:text-neon-cyan-400">AI-Powered Analysis</h4>
-                <p className="text-blue-200 dark:text-gray-300 leading-relaxed">Advanced algorithms analyze and optimize your resume</p>
               </div>
-              
-              <div className="text-center">
-                <div className="bg-blue-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 dark:bg-neon-blue-500/20 dark:shadow-neon-blue">
-                  <Award className="w-8 h-8 text-green-400 dark:text-neon-blue-400" />
+              <h4 className="font-semibold mb-2 text-lg text-yellow-300">AI-Powered Analysis</h4>
+              <p className="text-blue-100/90 dark:text-gray-300 leading-relaxed">Advanced algorithms analyze and optimize your resume</p>
+            </motion.div>
+
+            {/* Card 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              whileHover={{ y: -6, scale: 1.02 }}
+              className="text-center rounded-2xl p-6 backdrop-blur-sm bg-white/5 border border-white/10 shadow-xl"
+            >
+              <div className="relative mx-auto mb-5">
+                <motion.div
+                  className="absolute inset-0 rounded-full border-2 border-indigo-400/30"
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+                />
+                <div className="relative w-20 h-20 rounded-full mx-auto flex items-center justify-center bg-indigo-500/15">
+                  <Award className="w-8 h-8 text-green-300" />
                 </div>
-                <h4 className="font-semibold mb-3 text-lg text-yellow-300 dark:text-neon-blue-400">ATS Optimization</h4>
-                <p className="text-blue-200 dark:text-gray-300 leading-relaxed">Ensure your resume passes all screening systems</p>
               </div>
-              
-              <div className="text-center">
-                <div className="bg-blue-500/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 dark:bg-neon-purple-500/20 dark:shadow-neon-purple">
-                  <Users className="w-8 h-8 text-purple-400 dark:text-neon-purple-400" />
+              <h4 className="font-semibold mb-2 text-lg text-emerald-300">ATS Optimization</h4>
+              <p className="text-blue-100/90 dark:text-gray-300 leading-relaxed">Ensure your resume passes all screening systems</p>
+            </motion.div>
+
+            {/* Card 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+              whileHover={{ y: -6, scale: 1.02 }}
+              className="text-center rounded-2xl p-6 backdrop-blur-sm bg-white/5 border border-white/10 shadow-xl"
+            >
+              <div className="relative mx-auto mb-5">
+                <motion.div
+                  className="absolute inset-0 rounded-full border-2 border-fuchsia-400/30"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+                />
+                <div className="relative w-20 h-20 rounded-full mx-auto flex items-center justify-center bg-fuchsia-500/15">
+                  <Users className="w-8 h-8 text-fuchsia-300" />
                 </div>
-                <h4 className="font-semibold mb-3 text-lg text-yellow-300 dark:text-neon-purple-400">Expert Approved</h4>
-                <p className="text-blue-200 dark:text-gray-300 leading-relaxed">Formats trusted by recruiters worldwide</p>
               </div>
-            </div>
+              <h4 className="font-semibold mb-2 text-lg text-fuchsia-300">Expert Approved</h4>
+              <p className="text-blue-100/90 dark:text-gray-300 leading-relaxed">Formats trusted by recruiters worldwide</p>
+            </motion.div>
           </div>
         </div>
       </div>
