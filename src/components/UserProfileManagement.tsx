@@ -548,20 +548,24 @@ export const UserProfileManagement: React.FC<UserProfileManagementProps> = ({
     console.log('Submitting profile data:', data); // Debug log
 
     try {
-      await authService.updateUserProfile(user.id, {
-        full_name: data.full_name,
-        email_address: data.email_address,
-        phone: data.phone,
-        linkedin_profile: data.linkedin_profile,
-        github_profile: data.github_profile,
-        resume_headline: data.resume_headline,
-        current_location: data.current_location,
-        education_details: data.education_details,
-        experience_details: data.experience_details,
-        projects_details: data.projects_details,
-        skills_details: data.skills_details,
-        certifications_details: data.certifications_details,
-      });
+      await supabase
+  .from('profiles')
+  .update({
+    full_name: data.full_name,
+    email_address: data.email_address,
+    phone: data.phone,
+    linkedin_profile: data.linkedin_profile,
+    github_profile: data.github_profile,
+    resume_headline: data.resume_headline,
+    current_location: data.current_location,
+    education_details: data.education_details,
+    experience_details: data.experience_details,
+    projects_details: data.projects_details,
+    skills_details: data.skills_details,
+    certifications_details: data.certifications_details,
+  })
+  .eq('id', user.id);
+
       await revalidateUserSession(); // Refresh user context
       await markProfilePromptSeen(); // Mark prompt as seen after saving profile
       setSubmitSuccess(true);
