@@ -16,7 +16,6 @@ import {
   Instagram,
   Linkedin,
   MessageCircle,
-  MessageCircle,
   Check,
   Plus,
   ChevronDown,
