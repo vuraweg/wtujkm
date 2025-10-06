@@ -9,12 +9,16 @@ interface ResumeExportSettingsProps {
   resumeData: ResumeData;
   userType?: UserType;
   onExport: (options: ExportOptions, format: 'pdf' | 'word') => void;
+  // When true, shows the inline Live Preview panel inside this component.
+  // Set to false when a parent provides its own preview to avoid duplication.
+  showInlinePreview?: boolean;
 }
 
 export const ResumeExportSettings: React.FC<ResumeExportSettingsProps> = ({
   resumeData,
   userType = 'experienced',
-  onExport
+  onExport,
+  showInlinePreview = true
 }) => {
   const [options, setOptions] = useState<ExportOptions>(defaultExportOptions);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -52,8 +56,10 @@ export const ResumeExportSettings: React.FC<ResumeExportSettingsProps> = ({
 
   const fontFamilies = [ 'Times New Roman', 'Arial', 'Verdana', 'Georgia','Calibri'];
 
+  const containerGrid = showInlinePreview ? 'grid grid-cols-1 lg:grid-cols-2' : 'grid grid-cols-1';
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+    <div className={`${containerGrid} gap-6 h-full`}>
       {/* Left Side - Controls */}
       <div className="space-y-6 overflow-y-auto">
         {/* Resume Template Selection */}
@@ -255,26 +261,27 @@ export const ResumeExportSettings: React.FC<ResumeExportSettingsProps> = ({
         </div>
       </div>
 
-      {/* Right Side - Live Preview */}
-      <div className="bg-gray-50 rounded-xl p-4 h-full flex flex-col dark:bg-dark-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center dark:text-white">
-          <Layout className="w-5 h-5 mr-2 text-green-600 dark:text-neon-green-400" />
-          Live Preview
-        </h3>
-        <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-dark-100 dark:border-dark-300 overflow-hidden">
-          <div className="h-full overflow-y-auto">
-            <ResumePreview
-              resumeData={resumeData}
-              userType={userType}
-              exportOptions={options}
-            />
+      {/* Right Side - Live Preview (optional) */}
+      {showInlinePreview && (
+        <div className="bg-gray-50 rounded-xl p-4 h-full flex flex-col dark:bg-dark-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center dark:text-white">
+            <Layout className="w-5 h-5 mr-2 text-green-600 dark:text-neon-green-400" />
+            Live Preview
+          </h3>
+          <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-dark-100 dark:border-dark-300 overflow-hidden">
+            <div className="h-full overflow-y-auto">
+              <ResumePreview
+                resumeData={resumeData}
+                userType={userType}
+                exportOptions={options}
+              />
+            </div>
+          </div>
+          <div className="mt-3 text-xs text-gray-500 text-center dark:text-gray-400">
+            Preview updates as you change settings
           </div>
         </div>
-        <div className="mt-3 text-xs text-gray-500 text-center dark:text-gray-400">
-          Preview updates as you change settings
-        </div>
-      </div>
+      )}
     </div>
   );
 };
-
