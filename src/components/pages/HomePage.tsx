@@ -13,6 +13,9 @@ import {
   Zap,
   Award,
   Crown,
+  Instagram,
+  Linkedin,
+  MessageCircle,
   MessageCircle,
   Check,
   Plus,
@@ -467,6 +470,49 @@ export const HomePage: React.FC<HomePageProps> = ({
       </div>
 
       {/* CTA Section */}
+
+      {/* Footer */}
+      <footer className="mt-16 border-t border-gray-200 bg-white/80 backdrop-blur-sm dark:bg-dark-100/80 dark:border-dark-300">
+        <div className="container-responsive py-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              © {new Date().getFullYear()} PrimoBoost AI. All rights reserved.
+            </div>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://instagram.com/primoboostai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-pink-600 hover:bg-pink-50 transition-colors dark:border-dark-300 dark:text-pink-400 dark:hover:bg-dark-200"
+                aria-label="Instagram"
+                title="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href="https://linkedin.com/company/primoboost-ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-blue-700 hover:bg-blue-50 transition-colors dark:border-dark-300 dark:text-neon-cyan-400 dark:hover:bg-dark-200"
+                aria-label="LinkedIn"
+                title="LinkedIn"
+              >
+                <Linkedin className="w-5 h-5" />
+              </a>
+              <a
+                href="https://wa.me/0000000000"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 text-green-600 hover:bg-green-50 transition-colors dark:border-dark-300 dark:text-green-400 dark:hover:bg-dark-200"
+                aria-label="WhatsApp"
+                title="WhatsApp"
+              >
+                <MessageCircle className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
