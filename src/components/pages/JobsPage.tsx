@@ -227,7 +227,7 @@ export const JobsPage: React.FC<JobsPageProps> = ({
         {/* Jobs Grid */}
         {!error && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 gap-6 mb-8">
               {jobs.map((job, index) => (
                 <JobCard
                   key={job.id}
