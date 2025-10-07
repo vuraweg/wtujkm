@@ -25,47 +25,55 @@ export const FloatingChatbot: React.FC = () => {
 
   const toggleOpen = () => {
     if (isOpen) {
-      // Reset chat when closing
+      // Reset on close
       setMessages([]);
       setShowFaq(true);
     }
-    setIsOpen((p) => !p);
+    setIsOpen((prev) => !prev);
   };
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
-    setShowFaq(false); // hide FAQs after first interaction
-
+    setShowFaq(false);
     const userMsg = { role: "user", content: text };
-    setMessages((p) => [...p, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
     try {
       const systemPrompt = `
-You are **PrimoBoost AI**, the official AI assistant for PrimoBoostAI.in — a platform for AI-powered resume optimization, job listings, and interview preparation.
+You are **PrimoBoost AI**, the official support assistant for **PrimoBoostAI.in** — a platform for AI-powered resume optimization, job listings, and interview preparation.
 
-🧭 **Your job:**
-- Help users with resume optimization, job search, pricing plans, and support.
-- When users mention "payment", "pricing", "plan", "buy", or "subscription", show the pricing details below.
+🎯 Always answer in this structured format:
+
+**🔹Question:** <repeat the user's question briefly>  
+**💬Answer:** <short and clear explanation>  
+**💡Additional Info:** <add helpful details if relevant>  
+
+📘 Keep responses concise, factual, and formatted for easy reading.
+
+If the question is about:
+- "pricing", "plans", "subscription", or "payment": show the pricing details below.
 - Always end payment-related replies with:  
   👉 “For any billing or payment issues, please contact **primoboostai@gmail.com** with a screenshot of your issue. Our team will respond within 2 minutes.”
 
-💸 **PrimoBoost AI Pricing Plans (50% OFF):**
+💸 **PrimoBoost AI Pricing Plans (50% OFF)**  
 🏆 **Leader Plan** — ₹6400 (One-time) — 100 Resume Credits  
 💼 **Achiever Plan** — ₹3200 (One-time) — 50 Resume Credits  
 🚀 **Accelerator Plan** — ₹1600 (One-time) — 25 Resume Credits  
 ✨ **Starter Plan** — ₹640 (One-time) — 10 Resume Credits  
 🎯 **Kickstart Plan** — ₹320 (One-time) — 5 Resume Credits  
 
-Each plan includes:
-- Resume Optimizations  
-- ATS Score Checks  
-- Premium Support  
+Each plan includes Resume Optimizations, ATS Score Checks & Premium Support.  
 
-🏁 Encourage users to choose a plan that suits their career stage.
+If asked about:
+- "support", "help", "issue", or "contact" — reply with:  
+  “You can reach us anytime at **primoboostai@gmail.com** with a screenshot of your issue. We usually respond within 2 minutes.”
 
-If users ask about non-related topics, kindly bring them back to career, resume, or PrimoBoost-related help.
+If asked about:
+- "PrimoBoost AI" — explain what the platform does (AI-powered resume optimization and career growth support).  
+- "Resume optimization" — explain AI resume enhancement and scoring.  
+- "Job listings" — explain daily updates and JD-based resume matching.  
       `;
 
       const res = await fetch(
@@ -75,28 +83,32 @@ If users ask about non-related topics, kindly bring them back to career, resume,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [
-              { role: "user", parts: [{ text: `${systemPrompt}\n\nUser: ${text}` }] },
+              {
+                role: "user",
+                parts: [{ text: `${systemPrompt}\n\nUser: ${text}` }],
+              },
             ],
           }),
         }
       );
 
       const data = await res.json();
-
-      if (!res.ok) {
-        console.error("Gemini Error:", data);
-        throw new Error(data.error?.message || "Gemini request failed");
-      }
+      if (!res.ok) throw new Error(data.error?.message || "Gemini API error");
 
       const reply =
         data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "⚙️ Sorry, I’m having trouble connecting right now.";
-      setMessages((p) => [...p, { role: "assistant", content: reply }]);
+        "⚙️ Sorry, I’m having trouble right now. Please try again later.";
+
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch (err) {
       console.error("Chat Error:", err);
-      setMessages((p) => [
-        ...p,
-        { role: "assistant", content: "❌ Network error. Please try again later." },
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "❌ Network error. Please try again or contact primoboostai@gmail.com for quick support.",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -107,8 +119,6 @@ If users ask about non-related topics, kindly bring them back to career, resume,
     e.preventDefault();
     sendMessage(input);
   };
-
-  const handleQuickAsk = (q: string) => sendMessage(q);
 
   const faqs = [
     "What is PrimoBoost AI?",
@@ -152,18 +162,18 @@ If users ask about non-related topics, kindly bring them back to career, resume,
               </button>
             </div>
 
-            {/* Chat Section */}
+            {/* Chat Messages */}
             <div className="flex h-[420px] flex-col bg-white dark:bg-gray-900">
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-                {messages.map((msg, i) => (
+                {messages.map((msg, idx) => (
                   <div
-                    key={i}
+                    key={idx}
                     className={`flex ${
                       msg.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
                     <div
-                      className={`rounded-2xl px-3 py-2 text-sm ${
+                      className={`rounded-2xl px-3 py-2 text-sm whitespace-pre-line ${
                         msg.role === "user"
                           ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white"
                           : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
@@ -181,24 +191,24 @@ If users ask about non-related topics, kindly bring them back to career, resume,
               </div>
             </div>
 
-            {/* FAQ Section - visible only initially */}
+            {/* FAQ Suggestions */}
             {showFaq && (
               <div className="border-t border-gray-200 bg-gray-50 px-3 py-2 dark:bg-gray-800 dark:border-gray-700">
                 <div className="flex flex-wrap gap-2">
-                  {faqs.map((f) => (
+                  {faqs.map((q) => (
                     <button
-                      key={f}
-                      onClick={() => handleQuickAsk(f)}
+                      key={q}
+                      onClick={() => sendMessage(q)}
                       className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2.5 py-1.5 rounded-full font-medium transition"
                     >
-                      {f}
+                      {q}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Input Bar */}
+            {/* Input Box */}
             <form
               onSubmit={handleSend}
               className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
@@ -206,7 +216,7 @@ If users ask about non-related topics, kindly bring them back to career, resume,
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about resume, jobs, or plans..."
+                placeholder="Ask about resumes, jobs, or pricing..."
                 className="flex-1 rounded-xl border-none bg-white px-3 py-2 text-sm outline-none dark:bg-gray-700 dark:text-white"
               />
               <button
