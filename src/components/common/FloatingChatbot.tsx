@@ -25,7 +25,7 @@ export const FloatingChatbot: React.FC = () => {
 
   const toggleOpen = () => {
     if (isOpen) {
-      // Reset when closing
+      // Reset chat when closing
       setMessages([]);
       setShowFaq(true);
     }
@@ -34,7 +34,7 @@ export const FloatingChatbot: React.FC = () => {
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
-    setShowFaq(false); // hide FAQs after first click or message
+    setShowFaq(false); // hide FAQs after first interaction
 
     const userMsg = { role: "user", content: text };
     setMessages((p) => [...p, userMsg]);
@@ -43,10 +43,29 @@ export const FloatingChatbot: React.FC = () => {
 
     try {
       const systemPrompt = `
-You are **PrimoBoost AI**, the official AI assistant for PrimoBoostAI.in — a platform for resume optimization, job listings, and interview preparation.
-Keep your tone friendly, professional, and concise.
-Focus only on career, resume, job, or platform-related topics.
-If users ask off-topic questions, guide them back to PrimoBoost services.
+You are **PrimoBoost AI**, the official AI assistant for PrimoBoostAI.in — a platform for AI-powered resume optimization, job listings, and interview preparation.
+
+🧭 **Your job:**
+- Help users with resume optimization, job search, pricing plans, and support.
+- When users mention "payment", "pricing", "plan", "buy", or "subscription", show the pricing details below.
+- Always end payment-related replies with:  
+  👉 “For any billing or payment issues, please contact **primoboostai@gmail.com** with a screenshot of your issue. Our team will respond within 2 minutes.”
+
+💸 **PrimoBoost AI Pricing Plans (50% OFF):**
+🏆 **Leader Plan** — ₹6400 (One-time) — 100 Resume Credits  
+💼 **Achiever Plan** — ₹3200 (One-time) — 50 Resume Credits  
+🚀 **Accelerator Plan** — ₹1600 (One-time) — 25 Resume Credits  
+✨ **Starter Plan** — ₹640 (One-time) — 10 Resume Credits  
+🎯 **Kickstart Plan** — ₹320 (One-time) — 5 Resume Credits  
+
+Each plan includes:
+- Resume Optimizations  
+- ATS Score Checks  
+- Premium Support  
+
+🏁 Encourage users to choose a plan that suits their career stage.
+
+If users ask about non-related topics, kindly bring them back to career, resume, or PrimoBoost-related help.
       `;
 
       const res = await fetch(
@@ -133,7 +152,7 @@ If users ask off-topic questions, guide them back to PrimoBoost services.
               </button>
             </div>
 
-            {/* Messages */}
+            {/* Chat Section */}
             <div className="flex h-[420px] flex-col bg-white dark:bg-gray-900">
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {messages.map((msg, i) => (
@@ -162,7 +181,7 @@ If users ask off-topic questions, guide them back to PrimoBoost services.
               </div>
             </div>
 
-            {/* FAQ Section (only visible initially) */}
+            {/* FAQ Section - visible only initially */}
             {showFaq && (
               <div className="border-t border-gray-200 bg-gray-50 px-3 py-2 dark:bg-gray-800 dark:border-gray-700">
                 <div className="flex flex-wrap gap-2">
@@ -179,7 +198,7 @@ If users ask off-topic questions, guide them back to PrimoBoost services.
               </div>
             )}
 
-            {/* Input */}
+            {/* Input Bar */}
             <form
               onSubmit={handleSend}
               className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
@@ -187,7 +206,7 @@ If users ask off-topic questions, guide them back to PrimoBoost services.
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask anything about PrimoBoost AI..."
+                placeholder="Ask about resume, jobs, or plans..."
                 className="flex-1 rounded-xl border-none bg-white px-3 py-2 text-sm outline-none dark:bg-gray-700 dark:text-white"
               />
               <button
