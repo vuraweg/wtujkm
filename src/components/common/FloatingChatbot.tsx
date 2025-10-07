@@ -25,7 +25,6 @@ export const FloatingChatbot: React.FC = () => {
 
   const toggleOpen = () => {
     if (isOpen) {
-      // Reset on close
       setMessages([]);
       setShowFaq(true);
     }
@@ -35,6 +34,7 @@ export const FloatingChatbot: React.FC = () => {
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
     setShowFaq(false);
+
     const userMsg = { role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
@@ -42,39 +42,37 @@ export const FloatingChatbot: React.FC = () => {
 
     try {
       const systemPrompt = `
-You are **PrimoBoost AI**, the official support assistant for **PrimoBoostAI.in** — a platform for AI-powered resume optimization, job listings, and interview preparation.
+You are PrimoBoost AI, the official support assistant for PrimoBoostAI.in.
 
-🎯 Always answer in this structured format:
+🎯 Guidelines:
+- Always respond like a professional chat assistant — no emojis, no markdown formatting (no **bold**, no asterisks).
+- Structure every reply cleanly like this:
 
-**🔹Question:** <repeat the user's question briefly>  
-**💬Answer:** <short and clear explanation>  
-**💡Additional Info:** <add helpful details if relevant>  
+Question: <brief restatement>
+Answer: <short clear explanation>
+Additional Info (only if relevant): <extra context, pricing, or contact info>
 
-📘 Keep responses concise, factual, and formatted for easy reading.
+Keep tone natural, concise, and friendly. Never use emojis or decorative symbols.
 
-If the question is about:
-- "pricing", "plans", "subscription", or "payment": show the pricing details below.
-- Always end payment-related replies with:  
-  👉 “For any billing or payment issues, please contact **primoboostai@gmail.com** with a screenshot of your issue. Our team will respond within 2 minutes.”
+When user asks about:
+- "payment", "pricing", "plans", "buy", "subscription" — show clear list of available plans.
+- "support" or "contact" — tell them to email primoboostai@gmail.com with a screenshot (response time 2 minutes).
+- "resume optimization" — explain briefly about AI-based resume improvement.
+- "job listings" — explain daily updates & JD-based matching.
+- "PrimoBoost AI" — explain platform purpose clearly.
 
-💸 **PrimoBoost AI Pricing Plans (50% OFF)**  
-🏆 **Leader Plan** — ₹6400 (One-time) — 100 Resume Credits  
-💼 **Achiever Plan** — ₹3200 (One-time) — 50 Resume Credits  
-🚀 **Accelerator Plan** — ₹1600 (One-time) — 25 Resume Credits  
-✨ **Starter Plan** — ₹640 (One-time) — 10 Resume Credits  
-🎯 **Kickstart Plan** — ₹320 (One-time) — 5 Resume Credits  
+Pricing details (one-time purchase, 50% off):
+Leader Plan - ₹6400 — 100 Resume Credits
+Achiever Plan - ₹3200 — 50 Resume Credits
+Accelerator Plan - ₹1600 — 25 Resume Credits
+Starter Plan - ₹640 — 10 Resume Credits
+Kickstart Plan - ₹320 — 5 Resume Credits
 
-Each plan includes Resume Optimizations, ATS Score Checks & Premium Support.  
+Each plan includes Resume Optimizations, ATS Score Checks, and Premium Support.
 
-If asked about:
-- "support", "help", "issue", or "contact" — reply with:  
-  “You can reach us anytime at **primoboostai@gmail.com** with a screenshot of your issue. We usually respond within 2 minutes.”
-
-If asked about:
-- "PrimoBoost AI" — explain what the platform does (AI-powered resume optimization and career growth support).  
-- "Resume optimization" — explain AI resume enhancement and scoring.  
-- "Job listings" — explain daily updates and JD-based resume matching.  
-      `;
+End payment-related answers with:
+"For any billing or payment issues, please contact primoboostai@gmail.com with a screenshot of your issue. Our team will respond within 2 minutes."
+`;
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`,
@@ -97,7 +95,7 @@ If asked about:
 
       const reply =
         data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "⚙️ Sorry, I’m having trouble right now. Please try again later.";
+        "Sorry, I’m having trouble right now. Please try again later.";
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch (err) {
@@ -107,7 +105,7 @@ If asked about:
         {
           role: "assistant",
           content:
-            "❌ Network error. Please try again or contact primoboostai@gmail.com for quick support.",
+            "There seems to be a connection issue. Please try again or email primoboostai@gmail.com for quick support.",
         },
       ]);
     } finally {
@@ -151,7 +149,7 @@ If asked about:
                 />
                 <div>
                   <p className="text-sm font-semibold">PrimoBoost AI Assistant</p>
-                  <p className="text-xs text-white/80">Always here to help 💬</p>
+                  <p className="text-xs text-white/80">Always here to help</p>
                 </div>
               </div>
               <button
@@ -162,7 +160,7 @@ If asked about:
               </button>
             </div>
 
-            {/* Chat Messages */}
+            {/* Chat Window */}
             <div className="flex h-[420px] flex-col bg-white dark:bg-gray-900">
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {messages.map((msg, idx) => (
@@ -191,24 +189,24 @@ If asked about:
               </div>
             </div>
 
-            {/* FAQ Suggestions */}
+            {/* FAQ Buttons */}
             {showFaq && (
               <div className="border-t border-gray-200 bg-gray-50 px-3 py-2 dark:bg-gray-800 dark:border-gray-700">
                 <div className="flex flex-wrap gap-2">
-                  {faqs.map((q) => (
+                  {faqs.map((f) => (
                     <button
-                      key={q}
-                      onClick={() => sendMessage(q)}
+                      key={f}
+                      onClick={() => sendMessage(f)}
                       className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2.5 py-1.5 rounded-full font-medium transition"
                     >
-                      {q}
+                      {f}
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Input Box */}
+            {/* Input */}
             <form
               onSubmit={handleSend}
               className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
