@@ -18,25 +18,25 @@ export const FloatingChatbot: React.FC = () => {
 
   const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
-  // ✅ Log key once to verify it's loaded
+  // ✅ Check if key loaded
   useEffect(() => {
     console.log('Gemini API Key Loaded:', GEMINI_KEY ? '✅ Loaded' : '❌ Undefined')
   }, [GEMINI_KEY])
 
-  const toggleOpen = () => setIsOpen((prev) => !prev)
+  const toggleOpen = () => setIsOpen(p => !p)
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim()) return
 
-    const userMessage = { role: 'user', content: input.trim() }
-    setMessages((prev) => [...prev, userMessage])
+    const userMsg = { role: 'user', content: input.trim() }
+    setMessages(p => [...p, userMsg])
     setInput('')
     setLoading(true)
 
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -55,17 +55,17 @@ export const FloatingChatbot: React.FC = () => {
 
       if (!res.ok) {
         console.error('Gemini API Error:', data)
-        throw new Error(data.error?.message || 'Gemini API request failed')
+        throw new Error(data.error?.message || 'Gemini API failed')
       }
 
       const reply =
         data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        '⚙️ Sorry, I couldn’t generate a response.'
-      setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
+        '⚙️ Sorry, no response from Gemini.'
+      setMessages(p => [...p, { role: 'assistant', content: reply }])
     } catch (err) {
       console.error('Chat error:', err)
-      setMessages((prev) => [
-        ...prev,
+      setMessages(p => [
+        ...p,
         { role: 'assistant', content: '❌ Network error. Please try again later.' },
       ])
     } finally {
@@ -109,9 +109,9 @@ export const FloatingChatbot: React.FC = () => {
             {/* Messages */}
             <div className="flex h-[460px] flex-col bg-white dark:bg-gray-900">
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-                {messages.map((msg, idx) => (
+                {messages.map((msg, i) => (
                   <div
-                    key={idx}
+                    key={i}
                     className={`flex ${
                       msg.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
@@ -127,9 +127,10 @@ export const FloatingChatbot: React.FC = () => {
                     </div>
                   </div>
                 ))}
+
                 {loading && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 animate-pulse">
-                    PrimoBot is typing...
+                    PrimoBot is typing…
                   </p>
                 )}
               </div>
@@ -141,8 +142,8 @@ export const FloatingChatbot: React.FC = () => {
               >
                 <input
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask about ATS, payments, or resume tips..."
+                  onChange={e => setInput(e.target.value)}
+                  placeholder="Ask about ATS, payments, or resume tips…"
                   className="flex-1 rounded-xl border-none bg-white px-3 py-2 text-sm outline-none dark:bg-gray-700 dark:text-white"
                 />
                 <button
