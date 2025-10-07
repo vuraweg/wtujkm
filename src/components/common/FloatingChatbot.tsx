@@ -1,77 +1,86 @@
-import React, { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { Bot, Send, X } from 'lucide-react'
+import React, { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bot, Send, X } from "lucide-react";
 
 const chatbotAvatar =
-  'https://res.cloudinary.com/dlkovvlud/image/upload/c_scale,q_80,w_80/v1751536902/a-modern-logo-design-featuring-primoboos_XhhkS8E_Q5iOwxbAXB4CqQ_HnpCsJn4S1yrhb826jmMDw_nmycqj.jpg'
+  "https://res.cloudinary.com/dlkovvlud/image/upload/c_scale,q_80,w_80/v1751536902/a-modern-logo-design-featuring-primoboos_XhhkS8E_Q5iOwxbAXB4CqQ_HnpCsJn4S1yrhb826jmMDw_nmycqj.jpg";
 
 interface Message {
-  role: 'user' | 'assistant'
-  content: string
+  role: "user" | "assistant";
+  content: string;
 }
 
 export const FloatingChatbot: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-  const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
-
-  // ✅ Check if key loaded
   useEffect(() => {
-    console.log('Gemini API Key Loaded:', GEMINI_KEY ? '✅ Loaded' : '❌ Undefined')
-  }, [GEMINI_KEY])
+    console.log("Gemini API Key Loaded:", GEMINI_KEY ? "✅ Loaded" : "❌ Undefined");
+  }, [GEMINI_KEY]);
 
-  const toggleOpen = () => setIsOpen(p => !p)
+  const toggleOpen = () => setIsOpen((p) => !p);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim()) return
-
-    const userMsg = { role: 'user', content: input.trim() }
-    setMessages(p => [...p, userMsg])
-    setInput('')
-    setLoading(true)
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return;
+    const userMsg = { role: "user", content: text };
+    setMessages((p) => [...p, userMsg]);
+    setInput("");
+    setLoading(true);
 
     try {
+      const systemPrompt = `
+You are **PrimoBoost AI**, a friendly job-hunting assistant for PrimoBoostAI.in.
+You help users with resume optimization, job listings, subscription plans, payments, and interview tips.
+Be concise, motivating, and always mention PrimoBoost AI naturally in context.`;
+
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [
-              {
-                role: 'user',
-                parts: [{ text: input }],
-              },
+              { role: "system", parts: [{ text: systemPrompt }] },
+              { role: "user", parts: [{ text }] },
             ],
           }),
         }
-      )
+      );
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        console.error('Gemini API Error:', data)
-        throw new Error(data.error?.message || 'Gemini API failed')
-      }
-
+      const data = await res.json();
       const reply =
         data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        '⚙️ Sorry, no response from Gemini.'
-      setMessages(p => [...p, { role: 'assistant', content: reply }])
+        "⚙️ Sorry, I’m having trouble right now.";
+      setMessages((p) => [...p, { role: "assistant", content: reply }]);
     } catch (err) {
-      console.error('Chat error:', err)
-      setMessages(p => [
+      console.error("Chat error:", err);
+      setMessages((p) => [
         ...p,
-        { role: 'assistant', content: '❌ Network error. Please try again later.' },
-      ])
+        { role: "assistant", content: "❌ Network error. Please try again later." },
+      ]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(input);
+  };
+
+  const handleQuickAsk = (q: string) => sendMessage(q);
+
+  const faqs = [
+    "What is PrimoBoost AI?",
+    "How do I optimize my resume?",
+    "Tell me about job listings.",
+    "How do I fix payment issues?",
+    "Explain subscription plans.",
+    "How to contact support?",
+  ];
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 sm:bottom-8 sm:right-8">
@@ -82,7 +91,7 @@ export const FloatingChatbot: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 240 }}
+            transition={{ type: "spring", damping: 20, stiffness: 240 }}
             className="w-[min(380px,calc(100vw-2.5rem))] overflow-hidden rounded-3xl bg-white/95 shadow-2xl backdrop-blur dark:bg-gray-900"
           >
             {/* Header */}
@@ -94,8 +103,8 @@ export const FloatingChatbot: React.FC = () => {
                   className="h-10 w-10 rounded-full border border-white/40 object-cover"
                 />
                 <div>
-                  <p className="text-sm font-semibold">PrimoBoost Support Agent</p>
-                  <p className="text-xs text-white/80">AI Assistant • Online</p>
+                  <p className="text-sm font-semibold">PrimoBoost AI Assistant</p>
+                  <p className="text-xs text-white/80">Always here to help 💬</p>
                 </div>
               </div>
               <button
@@ -106,33 +115,45 @@ export const FloatingChatbot: React.FC = () => {
               </button>
             </div>
 
-            {/* Messages */}
+            {/* Chat body */}
             <div className="flex h-[460px] flex-col bg-white dark:bg-gray-900">
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {messages.map((msg, i) => (
                   <div
                     key={i}
                     className={`flex ${
-                      msg.role === 'user' ? 'justify-end' : 'justify-start'
+                      msg.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
                     <div
                       className={`rounded-2xl px-3 py-2 text-sm ${
-                        msg.role === 'user'
-                          ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                        msg.role === "user"
+                          ? "bg-gradient-to-br from-blue-600 to-indigo-600 text-white"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       }`}
                     >
                       {msg.content}
                     </div>
                   </div>
                 ))}
-
                 {loading && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 animate-pulse">
-                    PrimoBot is typing…
+                    PrimoBoost AI is typing...
                   </p>
                 )}
+              </div>
+
+              {/* FAQ Buttons */}
+              <div className="flex flex-wrap gap-2 px-3 py-2 border-t border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+                {faqs.map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => handleQuickAsk(f)}
+                    className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2.5 py-1.5 rounded-full font-medium transition"
+                  >
+                    {f}
+                  </button>
+                ))}
               </div>
 
               {/* Input */}
@@ -142,8 +163,8 @@ export const FloatingChatbot: React.FC = () => {
               >
                 <input
                   value={input}
-                  onChange={e => setInput(e.target.value)}
-                  placeholder="Ask about ATS, payments, or resume tips…"
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Type your message..."
                   className="flex-1 rounded-xl border-none bg-white px-3 py-2 text-sm outline-none dark:bg-gray-700 dark:text-white"
                 />
                 <button
@@ -167,10 +188,10 @@ export const FloatingChatbot: React.FC = () => {
         animate={{ scale: 1, rotate: isOpen ? 90 : 0 }}
         whileTap={{ scale: 0.9 }}
         className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 via-indigo-500 to-blue-700 text-white shadow-lg hover:shadow-xl focus:outline-none"
-        aria-label={isOpen ? 'Close chatbot' : 'Open chatbot'}
+        aria-label={isOpen ? "Close chatbot" : "Open chatbot"}
       >
         {isOpen ? <X className="h-6 w-6" /> : <Bot className="h-6 w-6" />}
       </motion.button>
     </div>
-  )
-}
+  );
+};
