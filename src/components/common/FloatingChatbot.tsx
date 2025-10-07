@@ -15,6 +15,7 @@ export const FloatingChatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
   const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
   useEffect(() => {
@@ -32,9 +33,10 @@ export const FloatingChatbot: React.FC = () => {
 
     try {
       const systemPrompt = `
-You are **PrimoBoost AI**, a friendly job-hunting assistant for PrimoBoostAI.in.
-You help users with resume optimization, job listings, subscription plans, payments, and interview tips.
-Be concise, motivating, and always mention PrimoBoost AI naturally in context.`;
+You are **PrimoBoost AI**, an expert assistant for PrimoBoostAI.in — a job platform helping users with AI-powered resume optimization, job listings, subscriptions, and interview preparation.
+Always answer in a short, friendly, professional tone and refer to PrimoBoost AI features.
+If asked unrelated questions, redirect politely back to resume or career support topics.
+      `;
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_KEY}`,
@@ -43,20 +45,25 @@ Be concise, motivating, and always mention PrimoBoost AI naturally in context.`;
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [
-              { role: "system", parts: [{ text: systemPrompt }] },
-              { role: "user", parts: [{ text }] },
+              { role: "user", parts: [{ text: `${systemPrompt}\n\nUser: ${text}` }] },
             ],
           }),
         }
       );
 
       const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Gemini Error:", data);
+        throw new Error(data.error?.message || "Gemini request failed");
+      }
+
       const reply =
         data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "⚙️ Sorry, I’m having trouble right now.";
+        "⚙️ Sorry, I’m having trouble connecting right now.";
       setMessages((p) => [...p, { role: "assistant", content: reply }]);
     } catch (err) {
-      console.error("Chat error:", err);
+      console.error("Chat Error:", err);
       setMessages((p) => [
         ...p,
         { role: "assistant", content: "❌ Network error. Please try again later." },
@@ -115,8 +122,8 @@ Be concise, motivating, and always mention PrimoBoost AI naturally in context.`;
               </button>
             </div>
 
-            {/* Chat body */}
-            <div className="flex h-[460px] flex-col bg-white dark:bg-gray-900">
+            {/* Messages */}
+            <div className="flex h-[420px] flex-col bg-white dark:bg-gray-900">
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {messages.map((msg, i) => (
                   <div
@@ -136,15 +143,18 @@ Be concise, motivating, and always mention PrimoBoost AI naturally in context.`;
                     </div>
                   </div>
                 ))}
+
                 {loading && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 animate-pulse">
                     PrimoBoost AI is typing...
                   </p>
                 )}
               </div>
+            </div>
 
-              {/* FAQ Buttons */}
-              <div className="flex flex-wrap gap-2 px-3 py-2 border-t border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700">
+            {/* Persistent FAQ Section */}
+            <div className="border-t border-gray-200 bg-gray-50 px-3 py-2 dark:bg-gray-800 dark:border-gray-700">
+              <div className="flex flex-wrap gap-2">
                 {faqs.map((f) => (
                   <button
                     key={f}
@@ -159,12 +169,12 @@ Be concise, motivating, and always mention PrimoBoost AI naturally in context.`;
               {/* Input */}
               <form
                 onSubmit={handleSend}
-                className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
+                className="flex items-center gap-2 mt-2"
               >
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your message..."
+                  placeholder="Ask anything about PrimoBoost AI..."
                   className="flex-1 rounded-xl border-none bg-white px-3 py-2 text-sm outline-none dark:bg-gray-700 dark:text-white"
                 />
                 <button
@@ -180,7 +190,7 @@ Be concise, motivating, and always mention PrimoBoost AI naturally in context.`;
         )}
       </AnimatePresence>
 
-      {/* Floating Bubble */}
+      {/* Floating Icon */}
       <motion.button
         key="chat-toggle"
         onClick={toggleOpen}
