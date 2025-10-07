@@ -22,6 +22,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import { PlanSelectionModal } from './components/payment/PlanSelectionModal';
 import { PricingPage } from './components/pages/PricingPage';
 import { OfferOverlay } from './components/OfferOverlay';
+import { FloatingChatbot } from './components/common/FloatingChatbot';
 import { CareersPage } from './components/pages/CareersPage';
 import { JobDetailsPageNew as JobDetailsPage } from './components/pages/JobDetailsPageNew';
 import { JobsPage } from './components/pages/JobsPage';
@@ -403,7 +404,7 @@ function App() {
       </Header>
 
       <Routes>
-        <Route path="/" element={<HomePage {...commonPageProps} />} />
+        <Route path="/" element={<><HomePage {...commonPageProps} /><FloatingChatbot /></>} />
         <Route
           path="/optimizer"
           element={
