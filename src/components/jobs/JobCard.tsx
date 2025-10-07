@@ -287,42 +287,45 @@ export const JobCard: React.FC<JobCardProps> = ({
           </div>
         )}
 
-      <div className="flex space-x-3">
-          <button
-            onClick={handleManualApplyClick}
-            disabled={isOptimizing}
-            className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 ${
-              isOptimizing
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl'
-            }`}
-          >
-            {isOptimizing ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Optimizing...</span>
-              </>
-            ) : (
-              <>
-                <ExternalLink className="w-4 h-4" />
-                <span>Manual Apply</span>
-              </>
-            )}
-          </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          onClick={handleManualApplyClick}
+          disabled={isOptimizing}
+          className={`inline-flex min-w-[150px] px-5 py-3 rounded-xl font-semibold transition-all duration-300 items-center justify-center gap-2 ${
+            isOptimizing
+              ? 'bg-gray-400 text-white cursor-not-allowed'
+              : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl'
+          }`}
+        >
+          {isOptimizing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Optimizing...</span>
+            </>
+          ) : (
+            <>
+              <ExternalLink className="w-4 h-4" />
+              <span>Manual Apply</span>
+            </>
+          )}
+        </button>
 
-          <button
-            disabled={true}
-            className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 bg-gray-300 text-gray-600 cursor-not-allowed relative overflow-hidden dark:bg-gray-700 dark:text-gray-400"
-            title="Feature launching soon"
-          >
-            <Sparkles className="w-4 h-4 animate-pulse" />
-            <span>AUTO Apply</span>
-            <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-bl-lg font-bold">COMING SOON</div>
-          </button>
-        </div>
+        <button
+          disabled={true}
+          className="inline-flex min-w-[150px] px-5 py-3 rounded-xl font-semibold transition-all duration-300 items-center justify-center gap-2 bg-gray-300 text-gray-600 cursor-not-allowed relative overflow-hidden dark:bg-gray-700 dark:text-gray-400"
+          title="Feature launching soon"
+        >
+          <Sparkles className="w-4 h-4 animate-pulse" />
+          <span>AUTO Apply</span>
+          <div className="absolute top-0 right-0 bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-bl-lg font-bold">COMING SOON</div>
+        </button>
+      </div>
         
         
       </div>
     </motion.div>
   );
 };
+
+
+
