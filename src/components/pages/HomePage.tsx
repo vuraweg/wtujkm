@@ -607,7 +607,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* CTA Section */}
 
       {/* Footer */}
-      <footer className="mt-16 bg-white/70 dark:bg-dark-100/80 backdrop-blur border-t border-gray-200 dark:border-dark-300">
+      <footer className="mt-8 sm:mt-16 bg-white/70 dark:bg-dark-100/80 backdrop-blur border-t border-gray-200 dark:border-dark-300">
         {/* gradient accent line */}
         <div className="h-0.5 bg-gradient-to-r from-pink-500 via-cyan-400 to-blue-600 dark:from-neon-pink-500 dark:via-neon-cyan-400 dark:to-neon-blue-500" />
         <div className="container-responsive py-8">
