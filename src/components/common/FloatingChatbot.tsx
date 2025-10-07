@@ -15,6 +15,7 @@ export const FloatingChatbot: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showFaq, setShowFaq] = useState(true);
 
   const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -22,10 +23,19 @@ export const FloatingChatbot: React.FC = () => {
     console.log("Gemini API Key Loaded:", GEMINI_KEY ? "✅ Loaded" : "❌ Undefined");
   }, [GEMINI_KEY]);
 
-  const toggleOpen = () => setIsOpen((p) => !p);
+  const toggleOpen = () => {
+    if (isOpen) {
+      // Reset when closing
+      setMessages([]);
+      setShowFaq(true);
+    }
+    setIsOpen((p) => !p);
+  };
 
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
+    setShowFaq(false); // hide FAQs after first click or message
+
     const userMsg = { role: "user", content: text };
     setMessages((p) => [...p, userMsg]);
     setInput("");
@@ -33,9 +43,10 @@ export const FloatingChatbot: React.FC = () => {
 
     try {
       const systemPrompt = `
-You are **PrimoBoost AI**, an expert assistant for PrimoBoostAI.in — a job platform helping users with AI-powered resume optimization, job listings, subscriptions, and interview preparation.
-Always answer in a short, friendly, professional tone and refer to PrimoBoost AI features.
-If asked unrelated questions, redirect politely back to resume or career support topics.
+You are **PrimoBoost AI**, the official AI assistant for PrimoBoostAI.in — a platform for resume optimization, job listings, and interview preparation.
+Keep your tone friendly, professional, and concise.
+Focus only on career, resume, job, or platform-related topics.
+If users ask off-topic questions, guide them back to PrimoBoost services.
       `;
 
       const res = await fetch(
@@ -143,7 +154,6 @@ If asked unrelated questions, redirect politely back to resume or career support
                     </div>
                   </div>
                 ))}
-
                 {loading && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 animate-pulse">
                     PrimoBoost AI is typing...
@@ -152,40 +162,42 @@ If asked unrelated questions, redirect politely back to resume or career support
               </div>
             </div>
 
-            {/* Persistent FAQ Section */}
-            <div className="border-t border-gray-200 bg-gray-50 px-3 py-2 dark:bg-gray-800 dark:border-gray-700">
-              <div className="flex flex-wrap gap-2">
-                {faqs.map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => handleQuickAsk(f)}
-                    className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2.5 py-1.5 rounded-full font-medium transition"
-                  >
-                    {f}
-                  </button>
-                ))}
+            {/* FAQ Section (only visible initially) */}
+            {showFaq && (
+              <div className="border-t border-gray-200 bg-gray-50 px-3 py-2 dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex flex-wrap gap-2">
+                  {faqs.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => handleQuickAsk(f)}
+                      className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 px-2.5 py-1.5 rounded-full font-medium transition"
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
               </div>
+            )}
 
-              {/* Input */}
-              <form
-                onSubmit={handleSend}
-                className="flex items-center gap-2 mt-2"
+            {/* Input */}
+            <form
+              onSubmit={handleSend}
+              className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
+            >
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask anything about PrimoBoost AI..."
+                className="flex-1 rounded-xl border-none bg-white px-3 py-2 text-sm outline-none dark:bg-gray-700 dark:text-white"
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 p-2 text-white shadow hover:scale-105 transition disabled:opacity-60"
               >
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask anything about PrimoBoost AI..."
-                  className="flex-1 rounded-xl border-none bg-white px-3 py-2 text-sm outline-none dark:bg-gray-700 dark:text-white"
-                />
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 p-2 text-white shadow hover:scale-105 transition disabled:opacity-60"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </form>
-            </div>
+                <Send className="h-4 w-4" />
+              </button>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>
