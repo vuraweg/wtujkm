@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Bot, Send, X } from 'lucide-react'
 
@@ -16,6 +16,13 @@ export const FloatingChatbot: React.FC = () => {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
+
+  // ✅ Log key once to verify it's loaded
+  useEffect(() => {
+    console.log('Gemini API Key Loaded:', GEMINI_KEY ? '✅ Loaded' : '❌ Undefined')
+  }, [GEMINI_KEY])
+
   const toggleOpen = () => setIsOpen((prev) => !prev)
 
   const handleSend = async (e: React.FormEvent) => {
@@ -29,9 +36,7 @@ export const FloatingChatbot: React.FC = () => {
 
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${
-          import.meta.env.VITE_GEMINI_API_KEY
-        }`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -47,12 +52,18 @@ export const FloatingChatbot: React.FC = () => {
       )
 
       const data = await res.json()
+
+      if (!res.ok) {
+        console.error('Gemini API Error:', data)
+        throw new Error(data.error?.message || 'Gemini API request failed')
+      }
+
       const reply =
         data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        '⚙️ Sorry, I’m having trouble connecting right now.'
+        '⚙️ Sorry, I couldn’t generate a response.'
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }])
-    } catch (error) {
-      console.error('Chat error:', error)
+    } catch (err) {
+      console.error('Chat error:', err)
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: '❌ Network error. Please try again later.' },
@@ -95,7 +106,7 @@ export const FloatingChatbot: React.FC = () => {
               </button>
             </div>
 
-            {/* Chat messages */}
+            {/* Messages */}
             <div className="flex h-[460px] flex-col bg-white dark:bg-gray-900">
               <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
                 {messages.map((msg, idx) => (
@@ -116,7 +127,6 @@ export const FloatingChatbot: React.FC = () => {
                     </div>
                   </div>
                 ))}
-
                 {loading && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 animate-pulse">
                     PrimoBot is typing...
@@ -124,7 +134,7 @@ export const FloatingChatbot: React.FC = () => {
                 )}
               </div>
 
-              {/* Input area */}
+              {/* Input */}
               <form
                 onSubmit={handleSend}
                 className="flex items-center gap-2 border-t border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
@@ -148,7 +158,7 @@ export const FloatingChatbot: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Floating bubble */}
+      {/* Floating Bubble */}
       <motion.button
         key="chat-toggle"
         onClick={toggleOpen}
