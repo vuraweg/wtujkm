@@ -239,7 +239,7 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
       if (jobApplicationLink) {
         const newWindow = window.open(jobApplicationLink, '_blank', 'noopener,noreferrer');
         if (!newWindow) {
-          window.location.href = jobApplicationLink;
+          console.warn('ResumeOptimizer: popup blocked when trying to open job application link.');
         }
         return;
       }
@@ -914,23 +914,18 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
                         Export Resume
                       </h2>
                     </div>
-                    <div className="p-6">
-                      <ResumeExportSettings
-                        resumeData={optimizedResume}
-                        userType={userType}
-                        onExport={handleExportFile}
-                        showInlinePreview={false}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden dark:bg-dark-100 dark:border-dark-300">
-                    <div className="p-6">
+                    <div className="p-6 space-y-6">
                       <ExportButtons
                         resumeData={optimizedResume}
                         userType={userType}
                         onShowProfile={onShowProfile}
                         walletRefreshKey={walletRefreshKey}
+                      />
+                      <ResumeExportSettings
+                        resumeData={optimizedResume}
+                        userType={userType}
+                        onExport={handleExportFile}
+                        showInlinePreview={false}
                       />
                     </div>
                   </div>
