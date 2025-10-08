@@ -6,12 +6,16 @@ interface LoadingAnimationProps {
   message?: string;
   submessage?: string;
   type?: 'optimization' | 'analysis' | 'generation' | 'payment';
+  adImageUrl?: string;
+  adImageAlt?: string;
 }
 
 export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
   message = "Processing...",
   submessage = "Please wait while we work our magic",
-  type = 'optimization'
+  type = 'optimization',
+  adImageUrl = "https://res.cloudinary.com/dvue2zenh/image/upload/v1759911969/becodghsmp77ugtnq4li.png",
+  adImageAlt = "Referral Program Promo"
 }) => {
   const getIcon = () => {
     switch (type) {
@@ -36,6 +40,7 @@ export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-dark-50 dark:to-dark-200 p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md w-full dark:bg-dark-100 transform transition-all duration-500 scale-100">
+        
         {/* Animated Icon */}
         <div className={`bg-gradient-to-r ${getGradient()} w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-white animate-pulse shadow-lg`}>
           {getIcon()}
@@ -55,6 +60,20 @@ export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({
         {/* Messages */}
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">{message}</h2>
         <p className="text-gray-600 dark:text-gray-300 mb-6">{submessage}</p>
+
+        {/* Promo Banner with Link */}
+        {adImageUrl && (
+          <div className="mb-6">
+            <a href="https://primoboostai.in/refer" target="_blank" rel="noopener noreferrer">
+              <img
+                src={adImageUrl}
+                alt={adImageAlt}
+                className="w-full rounded-xl shadow-md object-cover hover:scale-105 transition duration-300 ease-in-out"
+              />
+            </a>
+            <p className="text-sm text-gray-500 mt-2">Invite your friend & earn rewards 🎁</p>
+          </div>
+        )}
 
         {/* Progress Bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4 dark:bg-dark-300">
