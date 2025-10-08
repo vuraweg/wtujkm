@@ -18,7 +18,7 @@ import { SubscriptionPlans } from './components/payment/SubscriptionPlans';
 import { paymentService } from './services/paymentService';
 import { AlertModal } from './components/AlertModal';
 import { ToolsAndPagesNavigation } from './components/pages/ToolsAndPagesNavigation';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { PlanSelectionModal } from './components/payment/PlanSelectionModal';
 import { PricingPage } from './components/pages/PricingPage';
 import { OfferOverlay } from './components/OfferOverlay';
@@ -38,6 +38,7 @@ import { AdminUsersPage } from './components/admin/AdminUsersPage';
 function App() {
   const { isAuthenticated, user, markProfilePromptSeen, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -369,12 +370,22 @@ function App() {
 
   // MODIFIED LINES 200-210: Updated useEffect for the new welcome offer
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowWelcomeOffer(true);
-    }, 2000); // Show after 2 seconds
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
-    return () => clearTimeout(timer);
-  }, []);
+    if (location.pathname === '/') {
+      timer = setTimeout(() => {
+        setShowWelcomeOffer(true);
+      }, 2000); // Show after 2 seconds on home page only
+    } else {
+      setShowWelcomeOffer(false);
+    }
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [location.pathname]);
 
   const commonPageProps = {
     isAuthenticated: isAuthenticated,
