@@ -24,6 +24,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ExportButtons } from './ExportButtons';
 import { ResumePreviewControls } from './ResumePreviewControls';
 import { FullScreenPreviewModal } from './FullScreenPreviewModal';
+import { jobsService } from '../services/jobsService';
 
 // src/components/ResumeOptimizer.tsx
 const cleanResumeText = (text: string): string => {
@@ -79,6 +80,7 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
   const location = useLocation();
 
   const jobContext = location.state as { jobId?: string; jobDescription?: string; roleTitle?: string; companyName?: string; fromJobApplication?: boolean } | null;
+  const jobIdFromContext = jobContext?.jobId;
 
   const [extractionResult, setExtractionResult] = useState<ExtractionResult>({ text: '', extraction_mode: 'TEXT', trimmed: false });
   const [jobDescription, setJobDescription] = useState(jobContext?.jobDescription || '');
@@ -140,6 +142,7 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
   }>({ type: null, status: null, message: '' });
 
   const [optimizationInterrupted, setOptimizationInterrupted] = useState(false);
+  const [jobApplicationLink, setJobApplicationLink] = useState<string | null>(null);
 
   const [previewZoom, setPreviewZoom] = useState(1);
   const [showFullScreenPreview, setShowFullScreenPreview] = useState(false);
@@ -194,10 +197,70 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
   }, [isAuthenticated, user, checkSubscriptionStatus]); // Add checkSubscriptionStatus to dependencies
 
   useEffect(() => {
+    let isMounted = true;
+
+    if (!jobContext?.fromJobApplication || !jobIdFromContext) {
+      setJobApplicationLink(null);
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const fetchJobLink = async () => {
+      try {
+        const jobDetails = await jobsService.getJobListingById(jobIdFromContext);
+        if (isMounted) {
+          const link = jobDetails?.application_link?.trim();
+          setJobApplicationLink(link && link.length > 0 ? link : null);
+        }
+      } catch (error) {
+        console.error('ResumeOptimizer: Failed to fetch job application link', error);
+        if (isMounted) {
+          setJobApplicationLink(null);
+        }
+      }
+    };
+
+    fetchJobLink();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [jobContext?.fromJobApplication, jobIdFromContext]);
+
+  useEffect(() => {
     if (extractionResult.text.trim().length > 0 && currentStep === 0) {
       setCurrentStep(1);
     }
   }, [extractionResult.text, currentStep]);
+
+  const handleExternalApply = useCallback(
+    (resumeData?: ResumeData | null) => {
+      if (jobApplicationLink) {
+        const newWindow = window.open(jobApplicationLink, '_blank', 'noopener,noreferrer');
+        if (!newWindow) {
+          window.location.href = jobApplicationLink;
+        }
+        return;
+      }
+
+      if (jobIdFromContext) {
+        const navigationState = resumeData
+          ? {
+              state: {
+                optimizedResumeData: resumeData,
+                fromOptimizer: true
+              }
+            }
+          : undefined;
+        navigate(`/jobs/${jobIdFromContext}/apply-form`, navigationState);
+        return;
+      }
+
+      navigate('/jobs');
+    },
+    [jobApplicationLink, jobIdFromContext, navigate]
+  );
 
   const checkForMissingSections = useCallback((resumeData: ResumeData): string[] => { // Memoize
     const missing: string[] = [];
@@ -669,12 +732,7 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
                       </div>
                     </div>
                     <button
-                      onClick={() => navigate(`/jobs/${jobContext.jobId}/apply-form`, {
-                        state: {
-                          optimizedResumeData: optimizedResume,
-                          fromOptimizer: true
-                        }
-                      })}
+                      onClick={() => handleExternalApply(optimizedResume)}
                       className="w-full py-4 px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-3 transform hover:scale-105"
                     >
                       <Send className="w-6 h-6" />
@@ -819,12 +877,7 @@ const ResumeOptimizer: React.FC<ResumeOptimizerProps> = ({
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate(`/jobs/${jobContext.jobId}/apply-form`, {
-                      state: {
-                        optimizedResumeData: optimizedResume,
-                        fromOptimizer: true
-                      }
-                    })}
+                    onClick={() => handleExternalApply(optimizedResume)}
                     className="group flex-shrink-0 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 text-white px-6 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center space-x-3 transform hover:scale-105"
                   >
                     <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
