@@ -5,7 +5,19 @@ import { sampleJobs, fetchJobListings } from './sampleJobsData';
 import { ResumeData } from '../types/resume';
 import { exportToPDF } from '../utils/exportUtils';
 
+export const isEligibleYearsColumnMissing = (error: any): boolean => {
+  if (!error) return false;
+  const message = typeof error.message === 'string' ? error.message : '';
+  return (
+    error.code === 'PGRST204' ||
+    error.code === '42703' ||
+    message.includes('eligible_years')
+  );
+};
+
 class JobsService {
+  private static eligibleYearsSupported = true;
+
   // Create a new job listing (Admin only)
   async createJobListing(jobData: Partial<JobListing>): Promise<JobListing> {
     try {
@@ -78,7 +90,7 @@ class JobsService {
         return null;
       })();
 
-      const insertData = {
+      const insertData: Record<string, any> = {
         company_name: jobData.company_name,
         company_logo_url: jobData.company_logo_url || null,
         company_website: jobData.company_website || null,
@@ -123,13 +135,24 @@ class JobsService {
         original_description: jobData.full_description, // Store original before polish
       };
 
+      if (!JobsService.eligibleYearsSupported) {
+        delete insertData.eligible_years;
+      }
+
       console.log('JobsService: Inserting job data:', insertData);
 
-      const { data: newJob, error } = await supabase
-        .from('job_listings')
-        .insert(insertData)
-        .select()
-        .single();
+      const attemptInsert = async (payload: Record<string, any>) =>
+        supabase.from('job_listings').insert(payload).select().single();
+
+      let { data: newJob, error } = await attemptInsert(insertData);
+
+      if (error && isEligibleYearsColumnMissing(error)) {
+        console.warn('JobsService: eligible_years column not found. Retrying without it.');
+        JobsService.eligibleYearsSupported = false;
+        const fallbackPayload = { ...insertData };
+        delete fallbackPayload.eligible_years;
+        ({ data: newJob, error } = await attemptInsert(fallbackPayload));
+      }
 
       if (error) {
         console.error('JobsService: Error creating job listing:', error);
@@ -260,6 +283,10 @@ class JobsService {
 
       if (filters.experience_required) {
         query = query.eq('experience_required', filters.experience_required);
+      }
+
+      if (filters.eligible_year && JobsService.eligibleYearsSupported) {
+        query = query.ilike('eligible_years', `%${filters.eligible_year}%`);
       }
 
       if (filters.package_min) {
@@ -513,6 +540,7 @@ class JobsService {
     domains: string[];
     locationTypes: string[];
     experienceLevels: string[];
+    eligibleYears: string[];
     packageRanges: { min: number; max: number };
   }> {
     try {
@@ -524,6 +552,35 @@ class JobsService {
         .select('package_amount')
         .eq('is_active', true)
         .not('package_amount', 'is', null);
+      let eligibleYears: string[] = [];
+
+      if (JobsService.eligibleYearsSupported) {
+        const { data: eligibleYearRows, error: eligibleYearsError } = await supabase
+          .from('job_listings')
+          .select('eligible_years')
+          .eq('is_active', true);
+
+        if (eligibleYearsError) {
+          if (isEligibleYearsColumnMissing(eligibleYearsError)) {
+            JobsService.eligibleYearsSupported = false;
+          } else {
+            console.error('Error fetching eligible years:', eligibleYearsError);
+          }
+        } else if (eligibleYearRows) {
+          const yearSet = new Set<string>();
+          eligibleYearRows.forEach((row: { eligible_years?: string | null }) => {
+            if (!row?.eligible_years) return;
+            const tokens = row.eligible_years.includes(',') || row.eligible_years.includes('|') || row.eligible_years.includes('/')
+              ? row.eligible_years.split(/[,|/]/)
+              : row.eligible_years.split(/\s+/);
+            tokens
+              .map((token) => token.trim())
+              .filter(Boolean)
+              .forEach((token) => yearSet.add(token));
+          });
+          eligibleYears = Array.from(yearSet).sort();
+        }
+      }
 
       const uniqueDomains = [...new Set(domains?.map(d => d.domain) || [])];
       const uniqueLocations = [...new Set(locations?.map(l => l.location_type) || [])];
@@ -539,6 +596,7 @@ class JobsService {
         domains: uniqueDomains,
         locationTypes: uniqueLocations,
         experienceLevels: uniqueExperiences,
+        eligibleYears,
         packageRanges
       };
     } catch (error) {
@@ -547,6 +605,7 @@ class JobsService {
         domains: ['SDE', 'Data Science', 'Product', 'Marketing', 'Analytics'],
         locationTypes: ['Remote', 'Onsite', 'Hybrid'],
         experienceLevels: ['0-1 years', '0-2 years', '1-2 years', '1-3 years', '2-4 years', '3-5 years'],
+        eligibleYears: ['2022', '2023', '2024', '2025', '2026'],
         packageRanges: { min: 0, max: 1000000 }
       };
     }
