@@ -14,6 +14,7 @@ export interface JobListing {
   location_city?: string;
   experience_required: string;
   qualification: string;
+  eligible_years?: string | string[] | null;
   short_description: string;
   description: string;
   full_description: string;
