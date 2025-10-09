@@ -710,7 +710,7 @@ Return ONLY a JSON array of strings: ["skill1", "skill2", "skill3", "skill4", "s
       "X-Title": "PrimoBoost AI",
     },
     body: JSON.stringify({
-      model: modelOverride || 'deepseek/deepseek-chat-v3.1:free', // Set to deepseek/deepseek-chat-v3.1:free
+      model: modelOverride || 'openai/gpt-oss-20b:free', // Set to openai/gpt-oss-20b:free
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -980,7 +980,7 @@ Return ONLY a JSON array of strings: ["skill1", "skill2", "skill3", "skill4", "s
       "X-Title": "PrimoBoost AI",
     },
     body: JSON.stringify({
-      model: modelOverride || 'deepseek/deepseek-chat-v3.1:free', // Set to deepseek/deepseek-chat-v3.1:free
+      model: modelOverride || 'openai/gpt-oss-20b:free', // Set to openai/gpt-oss-20b:free
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -1089,7 +1089,7 @@ Generate the company description now:`;
       "X-Title": "PrimoBoost AI",
     },
     body: JSON.stringify({
-      model: 'deepseek/deepseek-chat-v3.1:free',
+      model: 'openai/gpt-oss-20b:free',
       messages: [{ role: "user", content: prompt }],
     }),
   });
