@@ -8,6 +8,7 @@ import {
   ChevronDown,
   SlidersHorizontal,
   MapPin,
+  Calendar,
   Building,
   Clock,
   IndianRupee,
@@ -32,6 +33,7 @@ export const JobFilters: React.FC<JobFiltersProps> = ({
     domains: [] as string[],
     locationTypes: [] as string[],
     experienceLevels: [] as string[],
+    eligibleYears: [] as string[],
     packageRanges: { min: 0, max: 1000000 }
   });
 
@@ -199,6 +201,24 @@ export const JobFilters: React.FC<JobFiltersProps> = ({
                   <option value="">All Experience Levels</option>
                   {filterOptions.experienceLevels.map(level => (
                     <option key={level} value={level}>{level}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Eligible Year Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Calendar className="w-4 h-4 inline mr-1" />
+                  Eligible Year
+                </label>
+                <select
+                  value={filters.eligible_year || ''}
+                  onChange={(e) => handleFilterChange('eligible_year', e.target.value || undefined)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                >
+                  <option value="">All Eligible Years</option>
+                  {filterOptions.eligibleYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
               </div>
