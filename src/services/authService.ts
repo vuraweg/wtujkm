@@ -9,19 +9,6 @@ class AuthService {
   private static lastDeviceActivityLog: number = 0;
   private static readonly DEVICE_ACTIVITY_LOG_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-  // Track whether the optional app_metrics table is available
-  private static appMetricsAvailable = true;
-
-  private static isAppMetricsMissingError(error: any): boolean {
-    if (!error) return false;
-    const message = typeof error.message === 'string' ? error.message : '';
-    return (
-      error.code === 'PGRST205' || // PostgREST table missing cache error
-      error.code === '42P01' || // PostgreSQL undefined table
-      message.includes("app_metrics")
-    );
-  }
-
   // MODIFIED: Updated isValidGmail to validate any email address
   private isValidEmail(email: string): boolean {
     console.log('DEBUG: isValidEmail received email:', email);
@@ -492,43 +479,24 @@ Object.keys(dbUpdates).forEach((key) => {
   }
 
   // ADDED: New method to increment global resumes created count
-  async incrementGlobalResumesCreatedCount(): Promise<number | null> {
-    if (!AuthService.appMetricsAvailable) {
-      console.log('AuthService: Skipping global resume count increment because app_metrics support is disabled.');
-      return null;
-    }
-
+  async incrementGlobalResumesCreatedCount(): Promise<number> {
     console.log('AuthService: Incrementing global resumes created count...');
     try {
       const { data, error } = await supabase.rpc('increment_total_resumes_created');
       if (error) {
-        if (AuthService.isAppMetricsMissingError(error)) {
-          console.warn('AuthService: app_metrics table not available. Disabling global resume counter updates.');
-          AuthService.appMetricsAvailable = false;
-          return null;
-        }
         console.error('AuthService: Error incrementing global resumes count:', error);
-        return null;
+        throw new Error('Failed to increment global resume count.');
       }
       console.log('AuthService: Global resumes count incremented successfully. New count:', data);
-      return data ?? null;
+      return data;
     } catch (error) {
-      if (AuthService.isAppMetricsMissingError(error)) {
-        console.warn('AuthService: app_metrics table not available during increment. Disabling further attempts.');
-        AuthService.appMetricsAvailable = false;
-        return null;
-      }
-      console.error('AuthService: Unexpected error in incrementGlobalResumesCreatedCount:', error);
-      return null;
+      console.error('AuthService: Error in incrementGlobalResumesCreatedCount catch block:', error);
+      throw error;
     }
   }
 
   // ADDED: New method to fetch global resumes created count
   async getGlobalResumesCreatedCount(): Promise<number> {
-    if (!AuthService.appMetricsAvailable) {
-      return 50000;
-    }
-
     console.log('AuthService: Fetching global resumes created count...');
     try {
       const { data, error } = await supabase
@@ -538,11 +506,6 @@ Object.keys(dbUpdates).forEach((key) => {
         .single();
       
       if (error) {
-        if (AuthService.isAppMetricsMissingError(error)) {
-          console.warn('AuthService: app_metrics table not found. Using fallback resume count.');
-          AuthService.appMetricsAvailable = false;
-          return 50000;
-        }
         console.error('AuthService: Error fetching global resumes count:', error);
         return 50000; // Return default if fetch fails
       }
@@ -550,11 +513,6 @@ Object.keys(dbUpdates).forEach((key) => {
       console.log('AuthService: Global resumes count fetched successfully:', data.metric_value);
       return data.metric_value;
     } catch (error) {
-      if (AuthService.isAppMetricsMissingError(error)) {
-        console.warn('AuthService: app_metrics table not available during fetch. Using fallback resume count.');
-        AuthService.appMetricsAvailable = false;
-        return 50000;
-      }
       console.error('AuthService: Error in getGlobalResumesCreatedCount catch block:', error);
       return 50000; // Return default if fetch fails
     }
@@ -562,3 +520,4 @@ Object.keys(dbUpdates).forEach((key) => {
 }
 
 export const authService = new AuthService();
+
