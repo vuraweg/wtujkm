@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   MapPin,
   Clock,
+  Calendar,
   Users,
   Briefcase,
   Target,
@@ -41,6 +42,20 @@ export const JobDetailsPageNew: React.FC<JobDetailsPageProps> = ({ onShowAuth })
   const [loading, setLoading] = useState(true);
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [copiedReferralCode, setCopiedReferralCode] = useState(false);
+  const eligibleYearTags = useMemo(() => {
+    if (!job?.eligible_years) return [];
+
+    const raw = job.eligible_years;
+    const tokens = Array.isArray(raw)
+      ? raw
+      : raw.includes(',') || raw.includes('|') || raw.includes('/')
+        ? raw.split(/[,|/]/)
+        : raw.split(/\s+/);
+
+    return tokens
+      .map((value) => value.trim())
+      .filter((value, index, arr) => value.length > 0 && arr.indexOf(value) === index);
+  }, [job?.eligible_years]);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -95,6 +110,26 @@ export const JobDetailsPageNew: React.FC<JobDetailsPageProps> = ({ onShowAuth })
     setShowApplicationModal(false);
     // Navigate to AI optimization flow
     navigate(`/jobs/${jobId}/apply`);
+  };
+
+  const handleScoreCheck = () => {
+    if (!job) return;
+
+    const fullJobDescription = [
+      job.full_description || job.description,
+      job.short_description ? `\n\nKey Points: ${job.short_description}` : '',
+      job.qualification ? `\n\nQualifications: ${job.qualification}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    navigate('/score-checker', {
+      state: {
+        jobDescription: fullJobDescription,
+        jobTitle: job.role_title,
+      },
+    });
+    setShowApplicationModal(false);
   };
 
   const copyReferralCode = (code: string) => {
@@ -221,6 +256,12 @@ export const JobDetailsPageNew: React.FC<JobDetailsPageProps> = ({ onShowAuth })
                       <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-sm rounded-full font-medium flex items-center">
                         <MapPin className="w-3 h-3 mr-1" />
                         {job.location_city}
+                      </span>
+                    )}
+                    {eligibleYearTags.length > 0 && (
+                      <span className="px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-sm rounded-full font-medium flex items-center">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        Eligible: {eligibleYearTags.join(' / ')}
                       </span>
                     )}
                     {job.ai_polished && (
@@ -514,6 +555,14 @@ export const JobDetailsPageNew: React.FC<JobDetailsPageProps> = ({ onShowAuth })
                       {job.location_type}
                     </span>
                   </div>
+                  {eligibleYearTags.length > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">Eligible Batches</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100 text-right">
+                        {eligibleYearTags.join(' / ')}
+                      </span>
+                    </div>
+                  )}
                   {job.has_referral && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">Referral</span>
@@ -536,6 +585,7 @@ export const JobDetailsPageNew: React.FC<JobDetailsPageProps> = ({ onShowAuth })
         job={job}
         onManualApply={handleManualApply}
         onAIOptimizedApply={handleAIOptimizedApply}
+        onScoreCheck={handleScoreCheck}
       />
     </div>
   );
