@@ -78,6 +78,7 @@ export interface JobFilters {
   experience_required?: string;
   package_min?: number;
   package_max?: number;
+  eligible_year?: string;
   search?: string;
   sort_by?: 'posted_date' | 'package_amount' | 'company_name';
   sort_order?: 'asc' | 'desc';
