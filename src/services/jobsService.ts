@@ -57,6 +57,27 @@ class JobsService {
       console.log('JobsService: ✅ Admin verification successful. Proceeding with job creation...');
 
       // Prepare job data with default values
+      const eligibleYears = (() => {
+        const value = jobData.eligible_years;
+        if (!value) return null;
+
+        if (Array.isArray(value)) {
+          const cleaned = value.map((item) => item.trim()).filter(Boolean);
+          return cleaned.length ? cleaned.join(', ') : null;
+        }
+
+        if (typeof value === 'string') {
+          const normalized = value.includes(',') || value.includes('|') || value.includes('/')
+            ? value.split(/[,|/]/)
+            : value.split(/\s+/);
+
+          const cleaned = normalized.map((item) => item.trim()).filter(Boolean);
+          return cleaned.length ? cleaned.join(', ') : null;
+        }
+
+        return null;
+      })();
+
       const insertData = {
         company_name: jobData.company_name,
         company_logo_url: jobData.company_logo_url || null,
@@ -70,6 +91,7 @@ class JobsService {
         location_city: jobData.location_city || null,
         experience_required: jobData.experience_required,
         qualification: jobData.qualification,
+        eligible_years: eligibleYears,
         short_description: jobData.short_description,
         full_description: jobData.full_description,
         description: jobData.full_description, // Duplicate for compatibility
