@@ -8,6 +8,7 @@ import {
   Briefcase,
   MapPin,
   Clock,
+  Calendar,
   GraduationCap,
   IndianRupee,
   ExternalLink,
@@ -35,6 +36,7 @@ const jobListingSchema = z.object({
   location_city: z.string().optional(),
   experience_required: z.string().min(1, 'Experience requirement is required'),
   qualification: z.string().min(1, 'Qualification is required'),
+  eligible_years: z.string().optional().or(z.literal('')),
   short_description: z.string().min(50, 'Short description must be at least 50 characters'),
   full_description: z.string().min(100, 'Full description must be at least 100 characters'),
   application_link: z.string().url('Must be a valid URL'),
@@ -97,6 +99,7 @@ export const JobEditPage: React.FC = () => {
           location_city: data.location_city || '',
           experience_required: data.experience_required,
           qualification: data.qualification,
+          eligible_years: data.eligible_years || '',
           short_description: data.short_description,
           full_description: data.full_description,
           application_link: data.application_link,
@@ -133,6 +136,7 @@ export const JobEditPage: React.FC = () => {
         location_city: data.location_city || null,
         experience_required: data.experience_required,
         qualification: data.qualification,
+        eligible_years: data.eligible_years?.trim() ? data.eligible_years.trim() : null,
         short_description: data.short_description,
         full_description: data.full_description,
         application_link: data.application_link,
@@ -353,7 +357,7 @@ export const JobEditPage: React.FC = () => {
               </div>
 
               {/* City, Experience, Qualification */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     City
@@ -394,11 +398,27 @@ export const JobEditPage: React.FC = () => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
                     placeholder="e.g., B.Tech"
                   />
-                  {errors.qualification && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.qualification.message}</p>
-                  )}
-                </div>
+                {errors.qualification && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.qualification.message}</p>
+                )}
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Calendar className="w-4 h-4 inline mr-1" />
+                  Eligible Graduation Years
+                </label>
+                <input
+                  type="text"
+                  {...register('eligible_years')}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-dark-200 dark:border-dark-300 dark:text-gray-100"
+                  placeholder="e.g., 2024, 2025, 2026"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Mention the graduation batches that can apply. Separate multiple years with commas.
+                </p>
+              </div>
+            </div>
 
               {/* Descriptions */}
               <div>
