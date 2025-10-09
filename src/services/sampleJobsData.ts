@@ -15,6 +15,7 @@ export const sampleJobs: JobListing[] = [
     location_city: 'Bangalore',
     experience_required: '0-2 years',
     qualification: 'B.Tech/B.E in Computer Science',
+    eligible_years: '2024, 2025',
     short_description: 'Join Google as a Software Engineer and work on products that impact billions of users worldwide.',
     full_description: 'We are looking for passionate software engineers to join our team and build the next generation of products that will change how people connect, explore, and interact with information.',
     application_link: 'https://careers.google.com/jobs/results/',
@@ -35,6 +36,7 @@ export const sampleJobs: JobListing[] = [
     location_type: 'Remote',
     experience_required: '1-3 years',
     qualification: 'M.Tech/M.S in Data Science or related field',
+    eligible_years: '2023, 2024',
     short_description: 'Work with cutting-edge AI and machine learning technologies at Microsoft.',
     full_description: 'Microsoft is seeking a talented Data Scientist to join our AI research team and develop innovative solutions using machine learning and artificial intelligence.',
     application_link: 'https://careers.microsoft.com/us/en/search-results',
@@ -56,6 +58,7 @@ export const sampleJobs: JobListing[] = [
     location_city: 'Seattle',
     experience_required: '3-5 years',
     qualification: 'MBA or equivalent experience',
+    eligible_years: '2022, 2023',
     short_description: 'Lead product strategy and development for Amazon\'s next-generation services.',
     full_description: 'Join Amazon as a Product Manager and drive the vision, strategy, and roadmap for products that serve millions of customers worldwide.',
     application_link: 'https://amazon.jobs/en/',
@@ -77,6 +80,7 @@ export const sampleJobs: JobListing[] = [
     location_city: 'Bangalore',
     experience_required: '1-2 years',
     qualification: 'B.Tech/B.E in Computer Science',
+    eligible_years: '2024, 2025',
     short_description: 'Build responsive and user-friendly interfaces for Flipkart\'s e-commerce platform.',
     full_description: 'We are looking for a talented Frontend Developer to join our team and create amazing user experiences for millions of customers on Flipkart.',
     application_link: 'https://www.flipkartcareers.com/',
@@ -97,6 +101,7 @@ export const sampleJobs: JobListing[] = [
     location_type: 'Remote',
     experience_required: '0-1 years',
     qualification: 'Currently pursuing MBA/BBA',
+    eligible_years: '2025, 2026',
     short_description: 'Join Zomato\'s marketing team and help grow India\'s largest food delivery platform.',
     full_description: 'We are looking for creative and data-driven marketing interns to join our team and help execute marketing campaigns that reach millions of users.',
     application_link: 'https://www.zomato.com/careers',
@@ -118,6 +123,7 @@ export const sampleJobs: JobListing[] = [
     location_city: 'Mumbai',
     experience_required: '2-4 years',
     qualification: 'B.Tech/MBA with analytical background',
+    eligible_years: '2023, 2024',
     short_description: 'Analyze business metrics and drive data-informed decisions at India\'s leading food delivery company.',
     full_description: 'Join Swiggy as a Business Analyst and help us understand customer behavior, optimize operations, and drive business growth through data-driven insights.',
     application_link: 'https://careers.swiggy.com/',
@@ -158,6 +164,13 @@ export const fetchJobListings = async (filters: any = {}, limit = 20, offset = 0
   if (filters.package_max) {
     filteredJobs = filteredJobs.filter(job => 
       job.package_amount && job.package_amount <= filters.package_max
+    );
+  }
+
+  if (filters.eligible_year) {
+    const yearSearch = String(filters.eligible_year).toLowerCase();
+    filteredJobs = filteredJobs.filter(job =>
+      job.eligible_years?.toLowerCase().includes(yearSearch)
     );
   }
 
