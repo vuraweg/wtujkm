@@ -1,5 +1,5 @@
 // src/components/jobs/JobCard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   Building2,
@@ -58,6 +58,21 @@ export const JobCard: React.FC<JobCardProps> = ({
     isComplete: boolean;
     missingFields: string[];
   } | null>(null);
+
+  const eligibleYearTags = useMemo(() => {
+    const raw = job.eligible_years;
+    if (!raw) return [];
+
+    const tokens = Array.isArray(raw)
+      ? raw
+      : raw.includes(',') || raw.includes('|') || raw.includes('/')
+        ? raw.split(/[,|/]/)
+        : raw.split(/\s+/);
+
+    return tokens
+      .map((value) => value.trim())
+      .filter((value, index, arr) => value.length > 0 && arr.indexOf(value) === index);
+  }, [job.eligible_years]);
 
   // Check profile completeness when component mounts (if authenticated)
   useEffect(() => {
@@ -229,6 +244,12 @@ export const JobCard: React.FC<JobCardProps> = ({
             <Clock className="w-3 h-3 mr-1" />
             {job.experience_required}
           </span>
+          {eligibleYearTags.length > 0 && (
+            <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-medium flex items-center dark:bg-amber-900/20 dark:text-amber-300">
+              <Calendar className="w-3 h-3 mr-1" />
+              <span>Eligible: {eligibleYearTags.join(' / ')}</span>
+            </span>
+          )}
           {job.has_referral && (
             <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full text-xs font-bold flex items-center shadow-md animate-pulse">
               <Users className="w-3 h-3 mr-1" />
