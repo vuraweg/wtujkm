@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  ArrowRight,
   Building2,
   MapPin,
   Clock,
@@ -25,31 +24,12 @@ import {
   Link as LinkIcon,
   Copy,
   ClipboardCheck,
-  AlertCircle as AlertIcon,
-  AlertTriangle
+  AlertCircle as AlertIcon
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { JobListing } from '../../types/jobs';
 import { Breadcrumb } from '../common/Breadcrumb';
 import { generateCompanyDescription } from '../../services/geminiService';
-
-type HoverAction = 'optimize' | 'score' | 'apply';
-
-interface HoverCardState {
-  action: HoverAction | null;
-  x: number;
-  y: number;
-}
-
-interface HoverCardDetails {
-  badge: string;
-  title: string;
-  description: string;
-  benefits: string[];
-  cautions: string[];
-  icon: React.ElementType;
-  tone: 'positive' | 'warning';
-}
 
 export const JobApplicationPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -59,106 +39,6 @@ export const JobApplicationPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [generatingDescription, setGeneratingDescription] = useState(false);
   const [companyDescription, setCompanyDescription] = useState<string>('');
-  const [hoverCard, setHoverCard] = useState<HoverCardState>({ action: null, x: 0, y: 0 });
-
-  const hoverCardContent: Record<HoverAction, HoverCardDetails> = {
-    optimize: {
-      badge: 'Recommended',
-      title: 'Optimize Resume',
-      description:
-        'Tailor your resume to this role with AI-driven keyword alignment and recruiter-approved formatting.',
-      benefits: [
-        'Boosts your match score using targeted job keywords',
-        'Refreshes bullet points for clarity, impact, and ATS readability'
-      ],
-      cautions: [
-        'Consumes one optimization credit from your plan',
-        'Allow about a minute for the tailored PDF to be ready'
-      ],
-      icon: Sparkles,
-      tone: 'positive'
-    },
-    score: {
-      badge: 'Quick Check',
-      title: 'ATS Score Check',
-      description:
-        'Get an instant compatibility snapshot of your current resume against this exact job posting.',
-      benefits: [
-        'Highlights missing keywords you can fix immediately',
-        'Shows how recruiters and ATS systems may rank your resume'
-      ],
-      cautions: [
-        'Score accuracy depends on the resume file you upload',
-        'Pair results with optimization for the highest shortlist chance'
-      ],
-      icon: Target,
-      tone: 'positive'
-    },
-    apply: {
-      badge: 'Heads up',
-      title: 'Apply Directly',
-      description: 'Skip the prep work and jump straight to the employer\'s application form.',
-      benefits: [
-        'Fastest route to submit your application today',
-        'Useful when you already have a tailored resume on hand'
-      ],
-      cautions: [
-        'Resume goes unchanged—lower odds of clearing ATS filters',
-        'Double-check attachments and contact details before leaving this page'
-      ],
-      icon: AlertTriangle,
-      tone: 'warning'
-    }
-  };
-
-  const updateHoverCardPosition = (action: HoverAction, clientX: number, clientY: number) => {
-    const offsetX = 24;
-    const offsetY = -24;
-    let x = clientX + offsetX;
-    let y = clientY + offsetY;
-
-    if (typeof window !== 'undefined') {
-      const cardWidth = 320;
-      const cardHeight = 220;
-      const padding = 16;
-
-      if (x + cardWidth > window.innerWidth - padding) {
-        x = Math.max(padding, clientX - cardWidth - offsetX);
-      }
-
-      if (x < padding) {
-        x = padding;
-      }
-
-      if (y < padding) {
-        y = clientY + Math.abs(offsetY);
-      }
-
-      if (y + cardHeight > window.innerHeight - padding) {
-        y = window.innerHeight - cardHeight - padding;
-      }
-    }
-
-    setHoverCard({ action, x, y });
-  };
-
-  const handleHoverStart = (action: HoverAction) => (event: React.MouseEvent<HTMLElement>) => {
-    updateHoverCardPosition(action, event.clientX, event.clientY);
-  };
-
-  const handleHoverMove = (action: HoverAction) => (event: React.MouseEvent<HTMLElement>) => {
-    updateHoverCardPosition(action, event.clientX, event.clientY);
-  };
-
-  const handleFocusStart = (action: HoverAction) => (event: React.FocusEvent<HTMLElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    updateHoverCardPosition(action, centerX, rect.top);
-  };
-
-  const clearHoverCard = () => {
-    setHoverCard((previous) => (previous.action ? { action: null, x: previous.x, y: previous.y } : previous));
-  };
 
   useEffect(() => {
     const fetchJobDetails = async () => {
@@ -232,25 +112,6 @@ export const JobApplicationPage: React.FC = () => {
     }
   };
 
-  const handleScoreCheck = () => {
-    if (!job) return;
-
-    const fullJobDescription = [
-      job.full_description || job.description,
-      job.short_description ? `\n\nKey Points: ${job.short_description}` : '',
-      job.qualification ? `\n\nQualifications: ${job.qualification}` : ''
-    ]
-      .filter(Boolean)
-      .join('\n');
-
-    navigate('/score-checker', {
-      state: {
-        jobDescription: fullJobDescription,
-        jobTitle: job.role_title
-      }
-    });
-  };
-
   const generateDescription = async () => {
     if (!job) return;
 
@@ -289,10 +150,6 @@ export const JobApplicationPage: React.FC = () => {
   const handleGoBack = () => {
     navigate('/jobs');
   };
-
-  const activeHoverCard = hoverCard.action ? hoverCardContent[hoverCard.action] : null;
-  const isWarningHover = activeHoverCard?.tone === 'warning';
-  const ActiveHoverIcon = activeHoverCard?.icon;
 
   if (loading) {
     return (
@@ -343,99 +200,8 @@ export const JobApplicationPage: React.FC = () => {
   };
 
   return (
-    <>
-      {activeHoverCard && ActiveHoverIcon && (
-        <div
-          className="fixed z-50 pointer-events-none transition-opacity duration-150"
-          style={{ top: hoverCard.y, left: hoverCard.x }}
-        >
-          <div
-            className={`w-72 rounded-2xl border px-5 py-4 shadow-2xl backdrop-blur-xl ${
-              isWarningHover
-                ? 'bg-red-50/95 border-red-200 text-red-900 shadow-red-500/20 dark:bg-red-900/95 dark:border-red-700 dark:text-red-100'
-                : 'bg-white/95 border-blue-100 text-gray-900 shadow-blue-500/10 dark:bg-slate-900/95 dark:border-slate-700 dark:text-gray-100'
-            }`}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p
-                  className={`text-[11px] uppercase tracking-wide font-semibold ${
-                    isWarningHover ? 'text-red-600 dark:text-red-300' : 'text-sky-600 dark:text-sky-300'
-                  }`}
-                >
-                  {activeHoverCard.badge}
-                </p>
-                <h4 className="mt-1 text-lg font-bold">{activeHoverCard.title}</h4>
-              </div>
-              <div
-                className={`w-10 h-10 flex items-center justify-center rounded-xl ${
-                  isWarningHover
-                    ? 'bg-red-100/70 text-red-700 dark:bg-red-800/70 dark:text-red-100'
-                    : 'bg-sky-100/80 text-sky-600 dark:bg-sky-800/60 dark:text-sky-100'
-                }`}
-              >
-                <ActiveHoverIcon className="w-5 h-5" />
-              </div>
-            </div>
-            <p
-              className={`mt-2 text-sm leading-relaxed ${
-                isWarningHover ? 'text-red-700 dark:text-red-100/90' : 'text-gray-600 dark:text-gray-300'
-              }`}
-            >
-              {activeHoverCard.description}
-            </p>
-            <div className="mt-3 space-y-2">
-              {activeHoverCard.benefits.map((benefit) => (
-                <div
-                  key={benefit}
-                  className={`flex items-start gap-2 text-xs font-medium leading-snug ${
-                    isWarningHover ? 'text-red-700 dark:text-red-100/90' : 'text-gray-700 dark:text-gray-200'
-                  }`}
-                >
-                  <CheckCircle
-                    className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                      isWarningHover ? 'text-red-500 dark:text-red-300' : 'text-emerald-500 dark:text-emerald-300'
-                    }`}
-                  />
-                  <span>{benefit}</span>
-                </div>
-              ))}
-            </div>
-            <div
-              className={`mt-3 border-t pt-2 ${
-                isWarningHover ? 'border-red-200/70 dark:border-red-700/60' : 'border-blue-100/70 dark:border-slate-700/60'
-              }`}
-            >
-              <p
-                className={`text-[11px] uppercase font-semibold tracking-wide ${
-                  isWarningHover ? 'text-red-600 dark:text-red-300' : 'text-slate-500 dark:text-slate-300'
-                }`}
-              >
-                Risks & reminders
-              </p>
-              <div className="mt-1 space-y-1">
-                {activeHoverCard.cautions.map((item) => (
-                  <div
-                    key={item}
-                    className={`flex items-start gap-2 text-xs leading-snug ${
-                      isWarningHover ? 'text-red-700 dark:text-red-100/80' : 'text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    <AlertIcon
-                      className={`mt-0.5 h-4 w-4 flex-shrink-0 ${
-                        isWarningHover ? 'text-red-500 dark:text-red-300' : 'text-amber-500 dark:text-amber-300'
-                      }`}
-                    />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-dark-50 dark:to-dark-200">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-dark-50 dark:to-dark-200">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Breadcrumb
           items={[
             { label: 'Jobs', path: '/jobs' },
@@ -786,11 +552,6 @@ export const JobApplicationPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button
               onClick={handleOptimizeResume}
-              onMouseEnter={handleHoverStart('optimize')}
-              onMouseMove={handleHoverMove('optimize')}
-              onMouseLeave={clearHoverCard}
-              onFocus={handleFocusStart('optimize')}
-              onBlur={clearHoverCard}
               className="group relative bg-gradient-to-br from-cyan-500 via-blue-500 to-blue-600 hover:from-cyan-400 hover:via-blue-400 hover:to-blue-500 text-white rounded-2xl p-8 shadow-2xl hover:shadow-cyan-500/50 transition-all duration-500 transform hover:scale-[1.02] text-left border-2 border-white/20 hover:border-white/40 overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all duration-500 -translate-y-16 translate-x-16"></div>
@@ -840,7 +601,7 @@ export const JobApplicationPage: React.FC = () => {
                     <div className="mt-0.5 bg-white/20 rounded-full p-0.5">
                       <CheckCircle className="w-4 h-4 flex-shrink-0" />
                     </div>
-                    <span className="text-sm font-medium">Recommended by hiring experts</span>
+                    <span className="text-sm font-medium">⭐ Recommended by hiring experts</span>
                   </li>
                 </ul>
 
@@ -855,11 +616,6 @@ export const JobApplicationPage: React.FC = () => {
 
             <button
               onClick={handleDirectApply}
-              onMouseEnter={handleHoverStart('apply')}
-              onMouseMove={handleHoverMove('apply')}
-              onMouseLeave={clearHoverCard}
-              onFocus={handleFocusStart('apply')}
-              onBlur={clearHoverCard}
               className="group bg-gradient-to-br from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 text-left"
             >
               <div className="flex items-center justify-between mb-4">
@@ -882,53 +638,20 @@ export const JobApplicationPage: React.FC = () => {
                   ? 'Apply directly on the company\'s career portal. You\'ll be redirected to their official application page.'
                   : 'Skip the optimization process and apply directly with your existing resume. Quick and straightforward application.'}
               </p>
-              <ul className="space-y-2 mb-4">
+              <ul className="space-y-2 mb-6">
                 <li className="flex items-start space-x-2">
-                  <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0 text-red-200" />
-                  <span className="text-sm text-red-100">
-                    Lower shortlist chances without optimization
-                  </span>
+                  <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">⚠ Lower chances of shortlisting without optimization</span>
                 </li>
                 <li className="flex items-start space-x-2">
-                  <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0 text-red-200" />
-                  <span className="text-sm text-red-100">
-                    No ATS keyword alignment for this job
-                  </span>
+                  <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">⚠ No ATS keyword alignment</span>
                 </li>
                 <li className="flex items-start space-x-2">
-                  <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0 text-red-200" />
-                  <span className="text-sm text-red-100">
-                    Resume may miss recruiter screening filters
-                  </span>
+                  <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm">⚠ May miss recruiter screening filters</span>
                 </li>
               </ul>
-              <button
-                onClick={handleScoreCheck}
-                onMouseEnter={(event) => {
-                  event.stopPropagation();
-                  updateHoverCardPosition('score', event.clientX, event.clientY);
-                }}
-                onMouseMove={(event) => {
-                  event.stopPropagation();
-                  updateHoverCardPosition('score', event.clientX, event.clientY);
-                }}
-                onMouseLeave={(event) => {
-                  event.stopPropagation();
-                  updateHoverCardPosition('apply', event.clientX, event.clientY);
-                }}
-                onFocus={(event) => {
-                  event.stopPropagation();
-                  handleFocusStart('score')(event);
-                }}
-                onBlur={(event) => {
-                  event.stopPropagation();
-                  clearHoverCard();
-                }}
-                className="w-full mb-4 bg-white/15 hover:bg-white/25 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-between backdrop-blur-sm"
-              >
-                <span>Check resume against this job (ATS Score)</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
               <div className="flex items-center justify-between text-sm font-semibold">
                 <span>Continue to Application</span>
                 <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:translate-x-2 transition-transform duration-300">
@@ -939,6 +662,6 @@ export const JobApplicationPage: React.FC = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
