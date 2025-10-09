@@ -1729,7 +1729,15 @@ const handleGenerateProjectBullets = async (
       setShowAIOptionsModal(true);
     } catch (error) {
       console.error('Error generating objective/summary:', error);
-      alert('Failed to generate objective/summary. Please try again.');
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : '';
+      alert(
+        `Failed to generate objective/summary.${errorMessage ? `\n\nReason: ${errorMessage}` : ' Please try again.'}`
+      );
     } finally {
       setIsGeneratingOptions(false);
     }
@@ -2839,7 +2847,7 @@ const handleGenerateProjectBullets = async (
                     resumeData={optimizedResume}
                     userType={userType}
                     showControls={true}
-                    defaultZoom={0.99}
+                    defaultZoom={0.65}
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-center px-6 py-12 text-gray-500 dark:text-gray-400">
