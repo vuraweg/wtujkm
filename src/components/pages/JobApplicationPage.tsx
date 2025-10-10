@@ -73,7 +73,7 @@ export const JobApplicationPage: React.FC = () => {
       ],
       cautions: [
         'Consumes one optimization credit from your plan',
-        'Allow about a minute for the tailored PDF to be ready'
+        'Sit tight! Your personalized JD-based Resume will be refined and ready in about a minute ✨'
       ],
       icon: Sparkles,
       tone: 'positive'
@@ -405,7 +405,7 @@ export const JobApplicationPage: React.FC = () => {
                   isWarningHover ? 'text-red-600 dark:text-red-300' : 'text-slate-500 dark:text-slate-300'
                 }`}
               >
-                Risks & reminders
+                Premium Experience
               </p>
               <div className="mt-1 space-y-1">
                 {activeHoverCard.cautions.map((item) => (
