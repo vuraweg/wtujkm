@@ -54,6 +54,13 @@ type AppliedCoupon = {
   finalAmount: number; // In paise
 };
 
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0
+  }).format(value);
+
 export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
   isOpen,
   onNavigateBack,
@@ -404,13 +411,9 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
                         <h3 className="text-sm lg:text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 break-words">{plan.name}</h3>
                         {/* Price Display */}
                         <div className="flex flex-col items-center mb-2">
-                          <span className="text-sm text-red-500 line-through">₹{plan.mrp}</span>
-                          <div className="flex items-center">
-                            <span className="text-xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">₹{plan.price}</span>
-                            <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">
-                              {plan.discountPercentage}% OFF
-                            </span>
-                          </div>
+                          <span className="text-xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                            {formatCurrency(plan.price)}
+                          </span>
                         </div>
                         <p className="text-gray-600 dark:text-gray-300 text-sm">One-time purchase</p>
                       </div>
@@ -660,4 +663,3 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
     </div>
   );
 };
-
