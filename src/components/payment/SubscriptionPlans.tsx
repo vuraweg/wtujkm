@@ -1,32 +1,18 @@
 // src/components/payment/SubscriptionPlans.tsx
-import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion'; // Import motion
+import React, { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
-  Check,
-  Star,
-  Zap,
-  Crown,
-  Clock,
-  X, // Ensure X is imported
-  Tag,
-  Sparkles,
   ArrowRight,
-  Info,
-  ChevronLeft,
-  ChevronRight,
-  Timer,
-  Target,
-  Rocket,
-  Briefcase,
-  Infinity,
+  Check,
   CheckCircle,
-  AlertCircle,
-  Wrench,
-  Gift,
+  ChevronDown,
+  ChevronLeft,
+  ChevronUp,
+  Clock,
   Plus,
-  ChevronDown, // Added for add-ons toggle
-  ChevronUp,   // Added for add-ons toggle
-  Wallet     // Added for wallet section
+  Sparkles,
+  Wallet,
+  X
 } from 'lucide-react';
 import { SubscriptionPlan } from '../../types/payment';
 import { paymentService } from '../../services/paymentService';
@@ -37,67 +23,73 @@ interface SubscriptionPlansProps {
   isOpen: boolean;
   onNavigateBack: () => void;
   onSubscriptionSuccess: () => void;
-  // ADDED: onShowAlert prop
-  onShowAlert: (title: string, message: string, type?: 'info' | 'success' | 'warning' | 'error', actionText?: string, onAction?: () => void) => void;
-  initialExpandAddons?: boolean; // NEW PROP
+  onShowAlert: (
+    title: string,
+    message: string,
+    type?: 'info' | 'success' | 'warning' | 'error',
+    actionText?: string,
+    onAction?: () => void
+  ) => void;
+  initialExpandAddons?: boolean;
 }
 
-type AddOn = {
-  id: string;
-  name: string;
-  price: number;
-};
+type AddOnQuantityMap = Record<string, number>;
 
-type AppliedCoupon = {
+interface AppliedCoupon {
   code: string;
-  discount: number; // In paise
-  finalAmount: number; // In paise
-};
+  discount: number;
+  finalAmount: number;
+}
 
 export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
   isOpen,
   onNavigateBack,
   onSubscriptionSuccess,
-  onShowAlert, // ADDED: Destructure onShowAlert
-  initialExpandAddons, // NEW: Destructure initialExpandAddons
+  onShowAlert,
+  initialExpandAddons
 }) => {
   const { user } = useAuth();
-  // MODIFIED: Change initial state to 'career_boost_plus'
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null); // Changed initial state to null
-  const [isProcessing, setIsProcessing] = useState(false);
-  // Initial slide set to index 2 to correspond to 'career_boost_plus' if it's the 3rd plan in the array (0-indexed).
-  // This might need adjustment if the order of plans changes.
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const plans = useMemo(() => paymentService.getPlans(), []);
+  const addOns = useMemo(() => paymentService.getAddOns(), []);
+
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(plans[0]?.id ?? null);
+  const [currentStep, setCurrentStep] = useState(0);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [couponError, setCouponError] = useState('');
-  const [walletBalance, setWalletBalance] = useState<number>(0); // Stored in paise
-  const [useWalletBalance, setUseWalletBalance] = useState<boolean>(false);
-  const [loadingWallet, setLoadingWallet] = useState<boolean>(true);
-  const [showAddOns, setShowAddOns] = useState<boolean>(initialExpandAddons || false); // MODIFIED: Initialize with new prop
-  const [selectedAddOns, setSelectedAddOns] = useState<{ [key: string]: number }>({});
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const [walletBalance, setWalletBalance] = useState(0); // paise
+  const [useWalletBalance, setUseWalletBalance] = useState(false);
+  const [loadingWallet, setLoadingWallet] = useState(true);
+  const [selectedAddOns, setSelectedAddOns] = useState<AddOnQuantityMap>({});
+  const [showAddOns, setShowAddOns] = useState(initialExpandAddons ?? false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const plans: SubscriptionPlan[] = paymentService.getPlans();
-  const addOns: AddOn[] = paymentService.getAddOns();
-
-  // Combine regular plans with the special "Add-ons Only" option
-  const allPlansWithAddOnOption = [
-    ...plans,
-    
-  ];
-
-  // REMOVED: The useEffect block that sets selectedPlan based on currentSlide.
-  // This was causing the selected plan to be overwritten by the carousel's state.
-
-  // Fetch wallet balance when the component mounts or when it becomes open/user changes
   useEffect(() => {
     if (user && isOpen) {
       fetchWalletBalance();
     }
   }, [user, isOpen]);
 
-  // Function to fetch the user's wallet balance from Supabase
+  useEffect(() => {
+    if (!isOpen) {
+      resetState();
+    }
+  }, [isOpen]);
+
+  const resetState = () => {
+    setCurrentStep(0);
+    setCouponCode('');
+    setAppliedCoupon(null);
+    setCouponError('');
+    setUseWalletBalance(false);
+    setSelectedAddOns({});
+    setIsProcessing(false);
+    setShowAddOns(initialExpandAddons ?? false);
+    if (plans.length > 0) {
+      setSelectedPlan(plans[0].id);
+    }
+  };
+
   const fetchWalletBalance = async () => {
     if (!user) return;
     setLoadingWallet(true);
@@ -106,558 +98,472 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
         .from('wallet_transactions')
         .select('amount, status')
         .eq('user_id', user.id);
+
       if (error) {
         console.error('Error fetching wallet balance:', error);
         return;
       }
-      // Filter for completed transactions and sum the amounts
-      const completed = (transactions || []).filter((t: any) => t.status === 'completed');
-      // Wallet balance is stored in Rupees, convert to paise for internal use
-      const balance = completed.reduce((sum: number, tr: any) => sum + parseFloat(tr.amount), 0) * 100;
-      setWalletBalance(Math.max(0, balance)); // Ensure balance is not negative
-    } catch (err) {
-      console.error('Error fetching wallet data:', err);
+
+      const completed = (transactions || []).filter((txn: any) => txn.status === 'completed');
+      const balance = completed.reduce((sum: number, txn: any) => sum + parseFloat(txn.amount), 0) * 100;
+      setWalletBalance(Math.max(0, balance));
+    } catch (fetchError) {
+      console.error('Error fetching wallet data:', fetchError);
     } finally {
       setLoadingWallet(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
-  // Helper function to return the correct Lucide icon component based on string input
-  const getPlanIcon = (iconType: string) => {
-    switch (iconType) {
-      case 'crown':
-        return <Crown className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'zap':
-        return <Zap className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'rocket':
-        return <Rocket className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'target':
-        return <Target className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'wrench':
-        return <Wrench className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'check_circle':
-        return <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'gift':
-        return <Gift className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'briefcase':
-        return <Briefcase className="w-5 h-5 sm:w-6 sm:h-6" />;
-      case 'infinity':
-        return <Infinity className="w-5 h-5 sm:w-6 sm:h-6" />;
-      default:
-        return <Star className="w-5 h-5 sm:w-6 sm:h-6" />;
-    }
-  };
+  const selectedPlanData = plans.find((plan) => plan.id === selectedPlan) ?? null;
 
-  // Carousel navigation functions
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % allPlansWithAddOnOption.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + allPlansWithAddOnOption.length) % allPlansWithAddOnOption.length);
-  };
-
-  const goToSlide = (index: number) => {
-    // This function can be used to directly jump to a slide (e.g., from dots)
-    setCurrentSlide(index);
-  };
-
-  // Handles applying a coupon code
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
-      setCouponError('Please enter a coupon code');
+      setCouponError('Please enter a coupon code.');
       onShowAlert('Coupon Error', 'Please enter a coupon code.', 'warning');
       return;
     }
     if (!user) {
-      onShowAlert('Authentication Required', 'Please sign in to apply coupon.', 'error', 'Sign In', () => {});
+      onShowAlert(
+        'Authentication Required',
+        'Please sign in to apply a coupon.',
+        'error',
+        'Sign In',
+        () => {}
+      );
       return;
     }
-
-    // paymentService.applyCoupon now returns isValid and message
     const result = await paymentService.applyCoupon(selectedPlan, couponCode.trim(), user.id);
-
     if (result.isValid) {
       setAppliedCoupon({
-        code: result.couponApplied!, // Use non-null assertion as isValid implies couponApplied is not null
+        code: result.couponApplied as string,
         discount: result.discountAmount,
-        finalAmount: result.finalAmount,
+        finalAmount: result.finalAmount
       });
       setCouponError('');
       onShowAlert('Coupon Applied!', result.message, 'success');
     } else {
-      setCouponError(result.message); // Display the specific error message from the service
       setAppliedCoupon(null);
+      setCouponError(result.message);
       onShowAlert('Coupon Error', result.message, 'warning');
     }
   };
 
-  // Handles removing an applied coupon
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode('');
     setCouponError('');
   };
 
-  // Find the currently selected plan data
-  const selectedPlanData = allPlansWithAddOnOption.find((p) => p.id === selectedPlan);
+  const handleAddOnQuantityChange = (addOnId: string, delta: number) => {
+    setSelectedAddOns((prev) => {
+      const nextQty = Math.max(0, (prev[addOnId] ?? 0) + delta);
+      if (nextQty === 0) {
+        const { [addOnId]: _, ...rest } = prev;
+        return rest;
+      }
+      return { ...prev, [addOnId]: nextQty };
+    });
+  };
 
-  // Calculate add-ons total in paise
-  const addOnsTotal = Object.entries(selectedAddOns).reduce((total, [addOnId, qty]) => {
+  const addOnsTotal = Object.entries(selectedAddOns).reduce((total, [addOnId, quantity]) => {
     const addOn = paymentService.getAddOnById(addOnId);
-    return total + (addOn ? addOn.price * 100 * qty : 0); // Multiply addOn.price by 100 for paise
+    if (!addOn) return total;
+    return total + addOn.price * 100 * quantity;
   }, 0);
 
-  // Initialize plan price from selected plan, convert to paise
-  let planPrice = (selectedPlanData?.price || 0) * 100;
-  // If a coupon is applied, use the final amount from the coupon calculation
+  let planPrice = (selectedPlanData?.price ?? 0) * 100;
   if (appliedCoupon) {
-    planPrice = appliedCoupon.finalAmount; // appliedCoupon.finalAmount is already in paise
+    planPrice = appliedCoupon.finalAmount;
   }
 
-  // Calculate wallet deduction, limited by available wallet balance and plan price
-  const walletDeduction = useWalletBalance ? Math.min(walletBalance, planPrice) : 0; // walletBalance is in paise
-
-  // Calculate the final plan price after wallet deduction, ensuring it's not negative
+  const walletDeduction = useWalletBalance ? Math.min(walletBalance, planPrice) : 0;
   const finalPlanPrice = Math.max(0, planPrice - walletDeduction);
-
-  // Calculate the grand total including final plan price and add-ons
   const grandTotal = finalPlanPrice + addOnsTotal;
 
-  // Handles the payment process
   const handlePayment = async () => {
     if (!user || !selectedPlanData) return;
     setIsProcessing(true);
 
-    // ADDED DEBUGGING LOGS
-    console.log('DEBUG: handlePayment - walletBalance (paise):', walletBalance);
-    console.log('DEBUG: handlePayment - planPrice (paise, after coupon):', planPrice);
-    console.log('DEBUG: handlePayment - walletDeduction (paise):', walletDeduction);
-    console.log('DEBUG: handlePayment - finalPlanPrice (paise):', finalPlanPrice);
-    console.log('DEBUG: handlePayment - addOnsTotal (paise):', addOnsTotal);
-    console.log('DEBUG: handlePayment - grandTotal (paise):', grandTotal);
-
     try {
-      // Retrieve the session and access token for authentication
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const {
+        data: { session },
+        error: sessionError
+      } = await supabase.auth.getSession();
 
-      console.log('SubscriptionPlans: session object after getSession:', session);
-      console.log('SubscriptionPlans: session.access_token after getSession:', session?.access_token);
-
-      if (sessionError || !session || !session.access_token) {
-        console.error('SubscriptionPlans: No active session found for payment:', sessionError);
-        // Show an authentication required message to the user
-        onShowAlert('Authentication Required', 'Please log in to complete your purchase.', 'error', 'Sign In', () => {});
+      if (sessionError || !session?.access_token) {
+        console.error('No active session found:', sessionError);
+        onShowAlert(
+          'Authentication Required',
+          'Please log in to complete your purchase.',
+          'error',
+          'Sign In',
+          () => {}
+        );
         setIsProcessing(false);
         return;
       }
 
       const accessToken = session.access_token;
 
-      console.log('SubscriptionPlans: Value of accessToken before calling processPayment:', accessToken);
-
-      // Handle zero-amount transactions (e.g., fully covered by wallet or free plan/coupon)
       if (grandTotal === 0) {
-        // Call processFreeSubscription with all relevant data
         const result = await paymentService.processFreeSubscription(
           selectedPlan,
           user.id,
-          appliedCoupon ? appliedCoupon.code : undefined,
-          addOnsTotal, // addOnsTotal is already in paise
-          selectedAddOns, // Pass selectedAddOns to processFreeSubscription
-          selectedPlanData.price * 100, // Pass original plan price in paise
-          walletDeduction // Pass walletDeduction
+          appliedCoupon?.code,
+          addOnsTotal,
+          selectedAddOns,
+          selectedPlanData.price * 100,
+          walletDeduction
         );
+
         if (result.success) {
-          // Refresh wallet balance after any successful payment or free activation
           await fetchWalletBalance();
           onSubscriptionSuccess();
-          onShowAlert('Subscription Activated!', 'Your free plan has been activated successfully.', 'success');
+          onShowAlert('Subscription Activated', 'Your plan has been activated.', 'success');
         } else {
-          console.error(result.error || 'Failed to activate free plan.');
-          onShowAlert('Activation Failed', result.error || 'Failed to activate free plan.', 'error');
+          onShowAlert(
+            'Activation Failed',
+            result.error || 'Failed to activate your plan. Please try again.',
+            'error'
+          );
         }
       } else {
-        // Process paid subscription
-        const paymentData = {
-          planId: selectedPlan,
-          amount: grandTotal, // grandTotal is already in paise
-          currency: 'INR',
-        };
         const result = await paymentService.processPayment(
-          paymentData,
+          {
+            planId: selectedPlan,
+            amount: grandTotal,
+            currency: 'INR'
+          },
           user.email,
           user.name,
-          accessToken, // Pass the access token for authentication
-          appliedCoupon ? appliedCoupon.code : undefined,
-          walletDeduction, // walletDeduction is already in paise
-          addOnsTotal, // addOnsTotal is already in paise
+          accessToken,
+          appliedCoupon?.code,
+          walletDeduction,
+          addOnsTotal,
           selectedAddOns
         );
+
         if (result.success) {
-          // Refresh wallet balance after any successful payment
           await fetchWalletBalance();
           onSubscriptionSuccess();
-          onShowAlert('Payment Successful!', 'Your subscription has been activated.', 'success');
+          onShowAlert('Payment Successful', 'Your subscription has been activated.', 'success');
         } else {
-          console.error('Payment failed:', result.error);
-          // If payment failed, and it was due to user cancellation, show a specific message
-          if (result.error && result.error.includes('Payment cancelled by user')) {
-            onShowAlert('Payment Cancelled', 'You have cancelled the payment. Please try again if you wish to proceed.', 'info');
-          } else {
-            onShowAlert('Payment Failed', result.error || 'Payment processing failed. Please try again.', 'error');
-          }
+          const message =
+            result.error && result.error.includes('Payment cancelled by user')
+              ? 'You cancelled the payment. Please try again if you wish to proceed.'
+              : result.error || 'Payment processing failed. Please try again.';
+          onShowAlert('Payment Failed', message, 'error');
         }
       }
     } catch (error) {
       console.error('Payment process error:', error);
-      onShowAlert('Payment Error', error instanceof Error ? error.message : 'An unexpected error occurred during payment.', 'error');
+      onShowAlert(
+        'Payment Error',
+        error instanceof Error ? error.message : 'An unexpected error occurred during payment.',
+        'error'
+      );
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Handles changing the quantity of an add-on
-  const handleAddOnQuantityChange = (addOnId: string, quantity: number) => {
-    console.log('DEBUG: handleAddOnQuantityChange called for:', addOnId, 'with quantity:', quantity);
-    setSelectedAddOns((prev) => ({
-      ...prev,
-      [addOnId]: Math.max(0, quantity), // Ensure quantity doesn't go below zero
-    }));
+  const renderFeatureText = (feature: string) => {
+    if (!feature) return feature;
+    if (feature.startsWith('✅') || feature.startsWith('❌')) {
+      const firstSpace = feature.indexOf(' ');
+      return firstSpace > 0 ? feature.slice(firstSpace + 1) : feature;
+    }
+    return feature;
   };
 
-  // State for the two-step flow
-  const [currentStep, setCurrentStep] = useState(0); // 0 for plan selection, 1 for payment details
-
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 sm:p-4 backdrop-blur-sm dark:bg-black/80 flex flex-col">
-      <div className="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl w-full max-w-7xl max-h-[95vh] overflow-y-auto flex flex-col dark:bg-dark-100 dark:shadow-dark-xl">
-        {/* Header Section */}
-        <div className="relative bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 px-3 sm:px-6 py-4 sm:py-8 border-b border-gray-100 flex-shrink-0 dark:from-dark-200 dark:via-dark-300 dark:to-dark-400 dark:border-dark-500">
-          {/* Back button */}
-          <button
-            onClick={onNavigateBack}
-            className="absolute top-2 sm:top-4 left-2 sm:left-4 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-white/50 z-10 min-w-[44px] min-h-[44px] dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-dark-300/50"
-          >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/60 p-2 sm:p-4 backdrop-blur-sm dark:bg-black/80">
+      <div className="relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-dark-100 dark:shadow-dark-xl">
+        <button
+          onClick={onNavigateBack}
+          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-gray-500 transition hover:bg-white hover:text-gray-900 dark:bg-dark-200/70 dark:text-gray-400 dark:hover:bg-dark-200 dark:hover:text-gray-100"
+          aria-label="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
 
-          {/* New X (close) button */}
-          <button
-            onClick={onNavigateBack}
-            className="absolute top-2 sm:top-4 right-2 sm:right-4 w-10 h-10 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-white/50 z-10 min-w-[44px] min-h-[44px] dark:text-gray-500 dark:hover:text-gray-300 dark:hover:bg-dark-300/50"
-          >
-            <X className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
-
-          <div className="text-center max-w-4xl mx-auto px-8">
-            <div className="bg-gradient-to-br from-neon-cyan-500 to-neon-purple-500 w-12 h-12 sm:w-20 sm:h-20 rounded-xl sm:rounded-3xl flex items-center justify-center mx-auto mb-3 sm:mb-6 shadow-lg dark:shadow-neon-cyan">
-              <Sparkles className="w-6 h-6 sm:w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-lg sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2 sm:mb-3">
-              {currentStep === 0 ? 'Choose Your Success Plan' : 'Confirm Your Order'}
-            </h1>
-            <p className="text-sm sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-3 sm:mb-6">
-              {currentStep === 0 ? 'Flexible pricing for every career stage.' : 'Review your selection and complete your purchase.'}
-            </p>
+        <header className="border-b border-gray-100 bg-gradient-to-br from-indigo-50 via-blue-50 to-white px-6 py-12 text-center dark:border-dark-200 dark:from-dark-100 dark:via-dark-200 dark:to-dark-300">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-indigo-500 via-sky-500 to-emerald-400 text-white shadow-lg">
+            <Sparkles className="h-8 w-8" />
           </div>
-        </div>
+          <h1 className="mt-6 text-3xl font-bold text-gray-900 dark:text-gray-50 sm:text-4xl">
+            {currentStep === 0 ? 'Choose Your Success Plan' : 'Confirm Your Order'}
+          </h1>
+          <p className="mt-3 text-base text-gray-600 dark:text-gray-300 sm:text-lg">
+            {currentStep === 0
+              ? 'Pick the bundle that matches your job search pace.'
+              : 'Review your selection and complete the checkout.'}
+          </p>
+        </header>
 
-        {/* Main Content Area */}
-        <div className="p-3 sm:p-6 lg:p-8 overflow-y-auto flex-1 flex-grow">
+        <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-10">
           {currentStep === 0 && (
             <>
-              {/* Desktop Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-6 mb-4 lg:mb-8">
-                {allPlansWithAddOnOption.map((plan) => (
-                  <motion.div
-                    key={plan.id}
-                    className={`relative rounded-xl lg:rounded-3xl border-2 transition-all duration-300 cursor-pointer ${
-                      selectedPlan === plan.id
-                        ? 'border-neon-cyan-500 shadow-2xl shadow-neon-cyan/20 ring-4 ring-neon-cyan-100 dark:border-neon-cyan-400 dark:ring-neon-cyan-400/30'
-                        : 'border-gray-200 hover:border-neon-cyan-300 hover:shadow-xl dark:border-dark-300 dark:hover:border-neon-cyan-400'
-                    } ${plan.popular ? 'ring-2 ring-green-500 ring-offset-4' : ''}`}
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    onClick={() => {
-                      setSelectedPlan(plan.id);
-                      setCurrentStep(1); // Automatically move to next step
-                    }}
-                  >
-                    {plan.popular && (
-                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span
-                          className="inline-flex items-center bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs lg:text-sm font-bold shadow-lg"
-                          style={{ fontSize: '10px', lineHeight: '1rem' }}
-                        >
-                          <span className="mr-1 text-sm">🏆</span> {plan.id === 'career_boost_plus' ? 'Most Popular' : 'Best Value'}
-                        </span>
-                      </div>
-
-
-                    )}
-                    <div className="p-3 lg:p-6">
-                      <div className="text-center mb-3 lg:mb-6">
-                        {/* Plan Name */}
-                        <h3 className="text-sm lg:text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 break-words">{plan.name}</h3>
-                        {/* Price Display */}
-                        <div className="flex flex-col items-center mb-2">
-                          <span className="text-sm text-red-500 line-through">₹{plan.mrp}</span>
-                          <div className="flex items-center">
-                            <span className="text-xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">₹{plan.price}</span>
-                            <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">
-                              {plan.discountPercentage}% OFF
-                            </span>
-                          </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {plans.map((plan) => {
+                  const isSelected = plan.id === selectedPlan;
+                  return (
+                    <motion.button
+                      key={plan.id}
+                      type="button"
+                      onClick={() => setSelectedPlan(plan.id)}
+                      whileHover={{ y: -4 }}
+                      className={`flex h-full flex-col rounded-[28px] border bg-white p-6 text-left shadow-md transition focus:outline-none dark:border-dark-200 dark:bg-dark-100 ${
+                        isSelected
+                          ? 'border-emerald-400 ring-2 ring-emerald-200 shadow-[0_20px_35px_rgba(16,185,129,0.12)]'
+                          : 'border-slate-100 hover:border-emerald-200 hover:shadow-lg dark:hover:border-emerald-400/60'
+                      }`}
+                    >
+                      <div className="mb-6 flex flex-col gap-2">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                          {plan.name}
+                        </h2>
+                        <div className="text-3xl font-bold text-gray-900 dark:text-gray-50 sm:text-4xl">
+                          ₹{plan.price}
                         </div>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm">One-time purchase</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">One-time purchase</p>
                       </div>
-                      {/* Resume Credits - Adjusted mb */}
-                      <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg lg:rounded-2xl p-2 lg:p-4 text-center mb-4"> {/* Adjusted mb */}
-                        <div className="text-lg lg:text-2xl font-bold text-indigo-600">{plan.optimizations}</div>
-                        <div className="text-xs lg:text-sm text-gray-600">Resume Credits</div>
+
+                      <div className="rounded-2xl bg-slate-50 py-6 text-center dark:bg-dark-200">
+                        <span className="text-4xl font-bold text-indigo-500 dark:text-indigo-300">
+                          {plan.optimizations}
+                        </span>
+                        <p className="mt-1 text-xs uppercase tracking-wide text-gray-500">Resume Credits</p>
                       </div>
-                      {/* MODIFIED LINE BELOW */}
-                      <ul className="space-y-1 lg:space-y-3 mb-3 lg:mb-6 max-h-32 lg:max-h-none overflow-y-auto lg:overflow-visible">
-                        {(plan.features || []).map((feature: string, fi: number) => (
-                          <li key={fi} className="flex items-start">
-                            <div className="w-5 h-5 lg:w-6 h-6 flex-shrink-0 mr-2 lg:mr-3 mt-0.5">
-                              {feature.startsWith('✅') ? (
-                                <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-0.5 rounded-full">
-                                  <Check className="w-4 h-4 lg:w-5 h-5 text-white" />
-                                </div>
-                              ) : (
-                                <div className="bg-gray-400 p-0.5 rounded-full"> {/* Changed to gray for excluded checkmark */}
-                                  <Check className="w-4 h-4 lg:w-5 h-5 text-white" /> {/* Still a checkmark */}
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-sm lg:text-base text-gray-700 break-words dark:text-gray-300">{feature.substring(feature.indexOf(' ') + 1)}</span>
+
+                      <ul className="mt-6 space-y-3 text-sm text-gray-700 dark:text-gray-200">
+                        {(plan.features || []).map((feature, index) => (
+                          <li key={index} className="flex items-start gap-3">
+                            <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300">
+                              <Check className="h-4 w-4" />
+                            </span>
+                            <span className="leading-relaxed">{renderFeatureText(feature)}</span>
                           </li>
                         ))}
                       </ul>
-                      <button
-                        onClick={() => {
-                          setSelectedPlan(plan.id);
-                          setCurrentStep(1); // Move to next step on Buy Now click
-                        }}
-                        className={`w-full py-2 lg:py-3 px-2 lg:px-4 rounded-lg lg:rounded-xl font-semibold transition-all duration-300 text-sm lg:text-base min-h-[44px] mt-2 ${
-                          selectedPlan === plan.id
-                            ? `bg-gradient-to-r ${plan.gradient || ''} text-white shadow-lg transform scale-105`
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+
+                      <span
+                        className={`mt-8 flex items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                          isSelected
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-600 dark:border-emerald-400 dark:bg-emerald-900/20 dark:text-emerald-300'
+                            : 'border-transparent bg-slate-100 text-gray-700 hover:bg-slate-200 dark:bg-dark-200 dark:text-gray-200 dark:hover:bg-dark-300'
                         }`}
                       >
-                        {selectedPlan === plan.id ? (
-                          <span className="flex items-center justify-center">
-                            <Check className="w-3 h-3 lg:w-5 h-5 mr-1 lg:mr-2" />
-                            Selected
-                          </span>
-                        ) : (
-                          'Buy Now'
-                        )}
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
+                        {isSelected ? 'Selected' : 'Select Plan'}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  onClick={onNavigateBack}
+                  className="inline-flex items-center justify-center rounded-full border border-transparent bg-slate-100 px-5 py-3 text-sm font-semibold text-gray-700 transition hover:bg-slate-200 dark:bg-dark-200 dark:text-gray-200 dark:hover:bg-dark-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => setCurrentStep(1)}
+                  disabled={!selectedPlan}
+                  className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                >
+                  Continue <ArrowRight className="ml-2 h-4 w-4" />
+                </button>
               </div>
             </>
           )}
 
-          {currentStep === 1 && (
-            <>
-              {/* Back Button for Step 1 */}
-              <div className="mb-4">
-                <button
-                  onClick={() => setCurrentStep(0)}
-                  className="btn-secondary py-2 px-4 flex items-center space-x-2"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                  <span>Back to Plans</span>
-                </button>
-              </div>
+          {currentStep === 1 && selectedPlanData && (
+            <div className="space-y-8">
+              <button
+                onClick={() => setCurrentStep(0)}
+                className="inline-flex items-center rounded-full border border-transparent bg-slate-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-slate-200 dark:bg-dark-200 dark:text-gray-200 dark:hover:bg-dark-300"
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back to plans
+              </button>
 
-              {/* Add-ons Section */}
-              <div className="mb-4 lg:mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
-                    <Plus className="w-5 h-5 mr-2 text-purple-600 dark:text-neon-purple-400" />
-                    Add-ons
-                  </h2>
-                  <button
-                    onClick={() => setShowAddOns(!showAddOns)}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center space-x-1 dark:text-neon-cyan-400 dark:hover:text-neon-cyan-300"
-                  >
-                    <span>{showAddOns ? 'Hide' : 'Show'} Add-ons</span>
-                    {showAddOns ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </button>
-                </div>
-                {showAddOns && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fadeIn">
-                    {addOns.map((addOn) => (
-                      <div key={addOn.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200 dark:bg-dark-200 dark:border-dark-300">
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">{addOn.name}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">₹{addOn.price}</p>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => handleAddOnQuantityChange(addOn.id, (selectedAddOns[addOn.id] || 0) - 1)}
-                            disabled={(selectedAddOns[addOn.id] || 0) === 0}
-                            className="btn-secondary p-2 rounded-full min-w-[32px] min-h-[32px] flex items-center justify-center"
-                          >
-                            -
-                          </button>
-                          <span className="font-bold text-lg text-gray-900 dark:text-gray-100">
-                            {selectedAddOns[addOn.id] || 0}
-                          </span>
-                          <button
-                            onClick={() => handleAddOnQuantityChange(addOn.id, (selectedAddOns[addOn.id] || 0) + 1)}
-                            className="btn-secondary p-2 rounded-full min-w-[32px] min-h-[32px] flex items-center justify-center"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm dark:border-dark-200 dark:bg-dark-100 lg:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                      Add-ons
+                    </h2>
+                    <button
+                      onClick={() => setShowAddOns((prev) => !prev)}
+                      className="flex items-center gap-2 text-sm font-medium text-emerald-600 transition hover:text-emerald-700 dark:text-emerald-300 dark:hover:text-emerald-200"
+                    >
+                      {showAddOns ? 'Hide' : 'Show'} add-ons
+                      {showAddOns ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </button>
                   </div>
-                )}
+                  {showAddOns && (
+                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                      {addOns.map((addOn) => (
+                        <div
+                          key={addOn.id}
+                          className="rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-dark-200 dark:bg-dark-200"
+                        >
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100">{addOn.name}</h3>
+                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">₹{addOn.price}</p>
+                          <div className="mt-4 flex items-center gap-3">
+                            <button
+                              onClick={() => handleAddOnQuantityChange(addOn.id, -1)}
+                              disabled={!selectedAddOns[addOn.id]}
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-dark-100 dark:text-gray-200 dark:hover:bg-dark-300"
+                            >
+                              -
+                            </button>
+                            <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                              {selectedAddOns[addOn.id] ?? 0}
+                            </span>
+                            <button
+                              onClick={() => handleAddOnQuantityChange(addOn.id, 1)}
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm transition hover:bg-slate-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm dark:border-dark-200 dark:bg-dark-100">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Wallet</h2>
+                  {loadingWallet ? (
+                    <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">Fetching wallet balance…</p>
+                  ) : (
+                    <div className="mt-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Wallet className="h-5 w-5 text-emerald-500" />
+                        <span className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                          ₹{(walletBalance / 100).toFixed(2)}
+                        </span>
+                      </div>
+                      {walletBalance > 0 && (
+                        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                          <input
+                            type="checkbox"
+                            checked={useWalletBalance}
+                            onChange={(event) => setUseWalletBalance(event.target.checked)}
+                            className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                          />
+                          Apply wallet balance
+                        </label>
+                      )}
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Wallet funds will be used before charging the remaining amount.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Coupon Code Section */}
-              <div className="mb-4 lg:mb-8">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                  <Tag className="w-5 h-5 mr-2 text-orange-600 dark:text-orange-400" />
-                  Apply Coupon Code
-                </h2>
-                <div className="flex space-x-2">
+              <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm dark:border-dark-200 dark:bg-dark-100">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Coupon</h2>
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                   <input
                     type="text"
                     placeholder="Enter coupon code"
                     value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value)}
-                    className="input-base flex-1"
+                    onChange={(event) => setCouponCode(event.target.value)}
                     disabled={!!appliedCoupon}
+                    className="input-base flex-1"
                   />
                   {!appliedCoupon ? (
                     <button
                       onClick={handleApplyCoupon}
-                      className="btn-primary px-4 py-2"
                       disabled={!couponCode.trim()}
+                      className="btn-primary inline-flex items-center justify-center px-5 py-2"
                     >
                       Apply
                     </button>
                   ) : (
                     <button
                       onClick={handleRemoveCoupon}
-                      className="btn-secondary px-4 py-2"
+                      className="btn-secondary inline-flex items-center justify-center px-5 py-2"
                     >
                       Remove
                     </button>
                   )}
                 </div>
                 {couponError && (
-                  <p className="text-red-600 text-sm mt-2 flex items-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {couponError}
-                  </p>
+                  <p className="mt-2 text-sm text-rose-500">{couponError}</p>
                 )}
                 {appliedCoupon && (
-                  <p className="text-green-600 text-sm mt-2 flex items-center">
-                    <CheckCircle className="w-4 h-4 mr-1" />
-                    Coupon "{appliedCoupon.code}" applied! You saved ₹{(appliedCoupon.discount / 100).toFixed(2)}.
+                  <p className="mt-2 text-sm text-emerald-600">
+                    Coupon “{appliedCoupon.code}” applied. You saved ₹{(appliedCoupon.discount / 100).toFixed(2)}.
                   </p>
                 )}
               </div>
 
-              {/* Wallet Balance Section */}
-              <div className="mb-4 lg:mb-8">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                  <Wallet className="w-5 h-5 mr-2 text-green-600 dark:text-green-400" />
-                  Wallet Balance
-                </h2>
-                {loadingWallet ? (
-                  <div className="text-gray-600 dark:text-gray-300">Loading wallet...</div>
-                ) : (
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      ₹{(walletBalance / 100).toFixed(2)}
-                    </span>
-                    {walletBalance > 0 && (
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={useWalletBalance}
-                          onChange={(e) => setUseWalletBalance(e.target.checked)}
-                          className="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
-                        />
-                        <span className="text-gray-700 dark:text-gray-300 text-sm">
-                          Use wallet balance
-                        </span>
-                      </label>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Order Summary */}
-              <div className="bg-gray-50 rounded-xl p-4 lg:p-6 border border-gray-200 dark:bg-dark-200 dark:border-dark-300 mb-4 lg:mb-8">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
-                  <Info className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
-                  Order Summary
-                </h2>
-                <div className="space-y-2 text-gray-700 dark:text-gray-300">
+              <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm dark:border-dark-200 dark:bg-dark-100">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Order summary</h2>
+                <div className="mt-4 space-y-3 text-sm text-gray-700 dark:text-gray-300">
                   <div className="flex justify-between">
-                    <span>Plan Price:</span>
+                    <span>Plan price</span>
                     <span>₹{(planPrice / 100).toFixed(2)}</span>
                   </div>
-                  {Object.keys(selectedAddOns).length > 0 && (
+                  {addOnsTotal > 0 && (
                     <div className="flex justify-between">
-                      <span>Add-ons:</span>
+                      <span>Add-ons</span>
                       <span>₹{(addOnsTotal / 100).toFixed(2)}</span>
-                  </div>
+                    </div>
                   )}
                   {appliedCoupon && (
-                    <div className="flex justify-between text-green-600 dark:text-green-400">
-                      <span>Coupon Discount:</span>
-                      <span>- ₹{(appliedCoupon.discount / 100).toFixed(2)}</span>
+                    <div className="flex justify-between text-emerald-600">
+                      <span>Coupon discount</span>
+                      <span>-₹{(appliedCoupon.discount / 100).toFixed(2)}</span>
                     </div>
                   )}
                   {useWalletBalance && walletDeduction > 0 && (
-                    <div className="flex justify-between text-red-600 dark:text-red-400">
-                      <span>Wallet Deduction:</span>
-                      <span>- ₹{(walletDeduction / 100).toFixed(2)}</span>
+                    <div className="flex justify-between text-rose-500">
+                      <span>Wallet deduction</span>
+                      <span>-₹{(walletDeduction / 100).toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between font-bold text-lg text-gray-900 dark:text-gray-100 border-t border-gray-300 pt-2">
-                    <span>Grand Total:</span>
+                  <div className="flex justify-between border-t border-slate-200 pt-3 text-lg font-semibold text-gray-900 dark:border-dark-300 dark:text-gray-100">
+                    <span>Grand total</span>
                     <span>₹{(grandTotal / 100).toFixed(2)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Checkout Button */}
-              <div className="p-3 sm:p-6 lg:p-8 border-t border-gray-100 flex-shrink-0 bg-white dark:bg-dark-100 dark:border-dark-500">
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                 <button
                   onClick={handlePayment}
                   disabled={isProcessing}
-                  className="w-full btn-primary py-3 sm:py-4 flex items-center justify-center text-lg sm:text-xl font-semibold rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-4 text-lg font-semibold text-white shadow-lg transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-300 sm:w-auto"
                 >
                   {isProcessing ? (
-                    <span className="flex items-center">
-                      <Clock className="w-5 h-5 mr-2 animate-spin" /> Processing...
+                    <span className="flex items-center gap-2">
+                      <Clock className="h-5 w-5 animate-spin" />
+                      Processing
                     </span>
                   ) : (
-                    <span className="flex items-center">
-                      Proceed to Checkout <ArrowRight className="w-5 h-5 ml-2" />
+                    <span className="flex items-center gap-2">
+                      Proceed to checkout
+                      <ArrowRight className="h-5 w-5" />
                     </span>
                   )}
                 </button>
               </div>
-            </>
+            </div>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );
 };
-
