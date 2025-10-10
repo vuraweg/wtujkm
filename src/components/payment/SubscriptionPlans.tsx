@@ -80,15 +80,6 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
 }) => {
   const { user } = useAuth();
   const plans = useMemo(() => paymentService.getPlans(), []);
-  const planOrder = ['leader_plan', 'achiever_plan', 'accelerator_plan', 'starter_plan', 'kickstart_plan'];
-  const plans = useMemo(() => {
-    const ordered = paymentService.getPlans().slice().sort((a, b) => {
-      const indexA = planOrder.indexOf(a.id);
-      const indexB = planOrder.indexOf(b.id);
-      return (indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA) - (indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB);
-    });
-    return ordered;
-  }, []);
   const addOns = useMemo(() => paymentService.getAddOns(), []);
 
   const [selectedPlan, setSelectedPlan] = useState<string | null>(plans[0]?.id ?? null);
@@ -307,18 +298,11 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
         <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-10">
           {currentStep === 0 && (
             <>
-              <div className="-mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto pb-8 px-4 sm:-mx-6 sm:px-6 lg:gap-8 add-scroll-x">
-                {(() => {
-                  const selectedIdx = plans.findIndex((plan) => plan.id === selectedPlan);
-                  const orderedPlans =
-                    selectedIdx === -1
-                      ? plans
-                      : [...plans.slice(selectedIdx), ...plans.slice(0, selectedIdx)];
-
-                  return orderedPlans.map((plan, idx) => {
-                    const isSelected = plan.id === selectedPlan;
-                    const visual = plan.popular ? planVisuals.highlight : planVisuals.default;
-                    return (
+              <div className="-mx-4 flex snap-x snap-mandatory gap-6 overflow-x-auto pb-8 px-4 sm:-mx-6 sm:px-6 lg:gap-8">
+                {plans.map((plan) => {
+                  const isSelected = plan.id === selectedPlan;
+                  const visual = plan.popular ? planVisuals.highlight : planVisuals.default;
+                  return (
                     <motion.button
                       key={plan.id}
                       type="button"
@@ -376,7 +360,6 @@ export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
                     </motion.button>
                   );
                 })}
-              })()}
               </div>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
