@@ -72,7 +72,7 @@ export const JobApplicationPage: React.FC = () => {
         'Refreshes bullet points for clarity, impact, and ATS readability'
       ],
       cautions: [
-        'Consumes one optimization credit from your plan',
+        
         'Sit tight! Your personalized JD-based Resume will be refined and ready in about a minute ✨'
       ],
       icon: Sparkles,
