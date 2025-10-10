@@ -111,31 +111,27 @@ export const JobApplicationPage: React.FC = () => {
     }
   };
 
-  const updateHoverCardPosition = (action: HoverAction, clientX: number, clientY: number) => {
-    const offsetX = 24;
-    const offsetY = -24;
-    let x = clientX + offsetX;
-    let y = clientY + offsetY;
+  const positionHoverCard = (action: HoverAction, rect: DOMRect) => {
+    if (typeof window === 'undefined') return;
 
-    if (typeof window !== 'undefined') {
-      const cardWidth = 320;
-      const cardHeight = 220;
-      const padding = 16;
+    const cardWidth = 320;
+    const cardHeight = 220;
+    const padding = 16;
+    const verticalGap = 12;
 
-      if (x + cardWidth > window.innerWidth - padding) {
-        x = Math.max(padding, clientX - cardWidth - offsetX);
-      }
+    let x = rect.left + rect.width / 2 - cardWidth / 2;
+    let y = rect.top - cardHeight - verticalGap;
 
-      if (x < padding) {
-        x = padding;
-      }
+    if (x < padding) {
+      x = padding;
+    } else if (x + cardWidth > window.innerWidth - padding) {
+      x = window.innerWidth - cardWidth - padding;
+    }
 
-      if (y < padding) {
-        y = clientY + Math.abs(offsetY);
-      }
-
+    if (y < padding) {
+      y = rect.bottom + verticalGap;
       if (y + cardHeight > window.innerHeight - padding) {
-        y = window.innerHeight - cardHeight - padding;
+        y = Math.max(padding, window.innerHeight - cardHeight - padding);
       }
     }
 
@@ -143,17 +139,15 @@ export const JobApplicationPage: React.FC = () => {
   };
 
   const handleHoverStart = (action: HoverAction) => (event: React.MouseEvent<HTMLElement>) => {
-    updateHoverCardPosition(action, event.clientX, event.clientY);
+    positionHoverCard(action, event.currentTarget.getBoundingClientRect());
   };
 
   const handleHoverMove = (action: HoverAction) => (event: React.MouseEvent<HTMLElement>) => {
-    updateHoverCardPosition(action, event.clientX, event.clientY);
+    positionHoverCard(action, event.currentTarget.getBoundingClientRect());
   };
 
   const handleFocusStart = (action: HoverAction) => (event: React.FocusEvent<HTMLElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    updateHoverCardPosition(action, centerX, rect.top);
+    positionHoverCard(action, event.currentTarget.getBoundingClientRect());
   };
 
   const clearHoverCard = () => {
