@@ -405,7 +405,7 @@ export const JobApplicationPage: React.FC = () => {
                   isWarningHover ? 'text-red-600 dark:text-red-300' : 'text-slate-500 dark:text-slate-300'
                 }`}
               >
-                Premium Experience
+                NoTE
               </p>
               <div className="mt-1 space-y-1">
                 {activeHoverCard.cautions.map((item) => (
