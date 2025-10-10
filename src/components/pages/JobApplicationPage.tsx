@@ -99,7 +99,7 @@ export const JobApplicationPage: React.FC = () => {
       title: 'Apply Directly',
       description: 'Skip the prep work and jump straight to the employer\'s application form.',
       benefits: [
-        'Fastest route to submit your application today',
+        
         'Useful when you already have a tailored resume on hand'
       ],
       cautions: [
