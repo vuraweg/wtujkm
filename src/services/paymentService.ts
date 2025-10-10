@@ -5,9 +5,9 @@ import { supabase } from '../lib/supabaseClient';
 export interface SubscriptionPlan {
   id: string;
   name: string;
-  price: number; // This will be the offer price
-  mrp: number; // New: Manufacturer's Recommended Price
-  discountPercentage: number; // New: Calculated discount percentage
+  price: number; // Current selling price
+  mrp: number; // For UI display; matches price when no discount is active
+  discountPercentage: number; // Calculated discount percentage, 0 when no discount
   duration: string;
   optimizations: number;
   scoreChecks: number;
@@ -85,9 +85,9 @@ class PaymentService {
     {
       id: 'leader_plan',
       name: 'Leader Plan',
-      price: 6400,
+      price: 12800,
       mrp: 12800,
-      discountPercentage: 50,
+      discountPercentage: 0,
       duration: 'One-time Purchase',
       optimizations: 100,
       scoreChecks: 100,
@@ -108,9 +108,9 @@ class PaymentService {
     {
       id: 'achiever_plan',
       name: 'Achiever Plan',
-      price: 3200,
+      price: 6400,
       mrp: 6400,
-      discountPercentage: 50,
+      discountPercentage: 0,
       duration: 'One-time Purchase',
       optimizations: 50,
       scoreChecks: 50,
@@ -131,9 +131,9 @@ class PaymentService {
     {
       id: 'accelerator_plan',
       name: 'Accelerator Plan',
-      price: 1600,
+      price: 3200,
       mrp: 3200,
-      discountPercentage: 50,
+      discountPercentage: 0,
       duration: 'One-time Purchase',
       optimizations: 25,
       scoreChecks: 25,
@@ -154,9 +154,9 @@ class PaymentService {
     {
       id: 'starter_plan',
       name: 'Starter Plan',
-      price: 640,
+      price: 1280,
       mrp: 1280,
-      discountPercentage: 50,
+      discountPercentage: 0,
       duration: 'One-time Purchase',
       optimizations: 10,
       scoreChecks: 10,
@@ -177,9 +177,9 @@ class PaymentService {
     {
       id: 'kickstart_plan',
       name: 'Kickstart Plan',
-      price: 320,
+      price: 640,
       mrp: 640,
-      discountPercentage: 50,
+      discountPercentage: 0,
       duration: 'One-time Purchase',
       optimizations: 5,
       scoreChecks: 5,
@@ -1014,4 +1014,3 @@ class PaymentService {
 }
 
 export const paymentService = new PaymentService();
-
