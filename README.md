@@ -184,4 +184,4 @@ VITE_EXTERNAL_BROWSER_API_KEY=your-client-api-key
 - Automatic retry for transient failures
 - Screenshot capture for failed applications
 
-This implementation provides a robust foundation for intelligent job application automation while maintaining flexibility for future enhancements and integrations.
+This implementation provides a robust foundation for intelligent job application automation while maintaining flexibility for future enhancements and integra
